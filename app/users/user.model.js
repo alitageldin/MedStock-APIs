@@ -32,9 +32,9 @@ const User = mongoose.Schema({
     default: PLATFORM
   },
   userType: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'roles',
     required: true,
-    default: ''
   }, // can be 'client'/'freelancer'
   phone: {
     type: String,

@@ -55,7 +55,7 @@ router.post('/sign-up', uploadFile.fields([
 router.post('/login', async (req, res) => {
   try {
     const accessToken = await userLogin(req.body)
-    return res.status(SUCCESS).send({ accessToken })
+    return res.status(SUCCESS).send(accessToken)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }

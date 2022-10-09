@@ -27,3 +27,16 @@ exports.SA_FULLNAME = 'MedStock Admin'
 exports.SA_EMAIL = 'admin@medstock.com'
 exports.SA_PASSWORD = 'MedStock@321'
 exports.SA_ROLE_TITLE = 'Super Admin'
+
+
+//user --- values
+exports.USER_fullname = 'MedStock User'
+exports.USER_firstName = 'MedStock'
+exports.USER_lastName = 'User'
+exports.USER_email = 'user@medstock.com'
+exports.USER_authType = 'PLATFORM'
+exports.USER_isEmailVerified = true
+exports.USER_isPhoneVerified = true
+exports.USER_signUpCompleted = true
+exports.USER_password = 'MedStock@321',
+exports.User_role = 'Seller'

@@ -22,7 +22,7 @@ exports.userLogin = async (body) => {
       throw ErrorHandler('password is required', BAD_REQUEST)
     }
     const q = body.email ? { email: body.email } : { phone: body.phone }
-    const user = await User.findOne(q).lean()
+    const user = await User.findOne(q).populate('userType').lean()
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }

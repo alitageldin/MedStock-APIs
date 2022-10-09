@@ -8,8 +8,7 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body
     const accessToken = await adminService.login(email, password)
-    
-    return res.status(SUCCESS).send({ accessToken })
+    return res.status(SUCCESS).send(accessToken)
   } catch (error) {
     return res.status(error.status || INTERNAL_ERR).send({ message: error.message })
   }

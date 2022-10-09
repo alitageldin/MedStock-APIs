@@ -14,16 +14,16 @@ exports.login = async (email, password) => {
       email: email
     }).populate('role')
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler("Email or Password didn't match.", BAD_REQUEST)
     }
     if (user.isBanned) {
-      throw ErrorHandler('account suspended contact Adminstrator', FORBIDDEN)
+      throw ErrorHandler('Account suspended contact Adminstrator', FORBIDDEN)
     }
     
 
     const validPass = await bcrypt.compare(password, user.password)
     if (!validPass) {
-      throw ErrorHandler('incorrect password', BAD_REQUEST)
+      throw ErrorHandler('Incorrect email or password', BAD_REQUEST)
     }
     const accessToken = jwt.sign({
       id: user._id,
@@ -32,7 +32,8 @@ exports.login = async (email, password) => {
       fullName: user.fullName,
       email: user.email
     }, process.env.SECRET_JWT)
-    return accessToken
+    delete user.password
+    return { accessToken: accessToken, user: user }
   } catch (error) {
     throw ErrorHandler(error.message, error.status || INTERNAL_ERR)
   }
