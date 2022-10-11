@@ -2,6 +2,7 @@ const express = require('express')
 const { INTERNAL_ERR, SUCCESS } = require('../../helpers/HTTP.CODES')
 const {
   userSignUp,
+  sellerSignUp,
   verifyEmail,
   deleteUser,
   reSendVerificationEmail,
@@ -52,6 +53,16 @@ router.post('/sign-up', uploadFile.fields([
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+router.post('/seller-sign-up', async (req, res) => {
+  try {
+    const accessToken = await sellerSignUp(req.body, req.files)
+    return res.status(SUCCESS).send(accessToken)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
 router.post('/login', async (req, res) => {
   try {
     const accessToken = await userLogin(req.body)

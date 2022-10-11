@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt')
 const { NOT_FOUND, BAD_REQUEST, UN_AUTHORIZED, INTERNAL_ERR, FORBIDDEN } = require('../../helpers/HTTP.CODES')
 const { sendEmail } = require('../emails/mailer')
 const { SA_ROLE_TITLE } = require('../../helpers/constants')
+const Role = require('../roles/role.model')
+const userModel = require('../users/user.model')
 
 exports.login = async (email, password) => {
   try {
@@ -240,4 +242,126 @@ exports.changePassword = async (body) => {
   } catch (error) {
     throw ErrorHandler(error.message, INTERNAL_ERR)
   }
+}
+exports.getAllSeller = async(queryParams) =>{
+  try {
+    const sortBy = queryParams.sortBy ? queryParams.sortBy : 'createdAt'
+    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    const userType = await Role.findOne({title: 'Seller'});
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+    const q = queryParams.q ? queryParams.q : ''
+    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+    const query = [{ fullName: { $regex: q, $options: 'i' } },
+      { email: { $regex: q, $options: 'i' } },
+      { phone: { $regex: q, $options: 'i' } },
+      { country: { $regex: q, $options: 'i' } },
+      { address: { $regex: q, $options: 'i' } }
+      // { aboutMe: { $regex: q, $options: 'i' } }
+    ]
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+    if (queryParams.isBanned) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          isBanned: JSON.parse(queryParams.isBanned)
+        }
+      }
+    }
+    if (queryParams.isProfileVerified) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          isProfileVerified: JSON.parse(queryParams.isProfileVerified)
+        }
+      }
+    }
+    // if (skills) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       $or: [{ 'skills.name': { $in: skills } },
+    //         { 'skills.path': { $in: skills.map(s => { return new RegExp(`,${s},`) }) } }]
+    //     }
+    //   }
+    // }
+    if (userType) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          userType: userType._id
+
+        }
+      }
+    }
+
+    let users = await userModel.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'skills',
+                foreignField: '_id',
+                as: 'skills'
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'skills',
+                foreignField: '_id',
+                as: 'skills'
+              }
+            },
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+    users = JSON.parse(JSON.stringify(users))
+    // if (userType.title === 'Seller' && queryParams.jobCount) {
+    //   for await (const user of users[0].results) {
+    //     user.assignedJobs = await Job.countDocuments({ 'assignedTo.id': user._id, status: ACCEPTED })
+    //   }
+    // }
+    return { data: users[0].results, totalCount: users[0].count[0]?.totalCount || 0 }
+  } catch (error) {
+    throw error
+  }
+}
+exports.sellerApproved = async(seller_id) =>{
+  let seller = await userModel.findById(seller_id);
+  seller.isEmailVerified = true;
+  seller.save();
+  const templateAdminHbs = 'seller-approved.hbs'
+  if (seller.email) {
+        sendEmail(seller.email,'',`${seller.fullName} Approved as Seller`, templateAdminHbs)
+  };
+  return seller;
+}
+
+exports.sellerDisapproved = async(seller_id) =>{
+  let seller = await userModel.findById(seller_id);
+  seller.isEmailVerified = false;
+  seller.save();
+  const templateAdminHbs = 'seller-disapproved.hbs'
+  if (seller.email) {
+        sendEmail(seller.email,'',`${seller.fullName} Disapproved as Seller`, templateAdminHbs)
+  };
+  return seller;
 }

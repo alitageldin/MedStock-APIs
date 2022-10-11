@@ -9,9 +9,12 @@ const { sendEmail } = require('../emails/mailer')
 const fs = require('fs')
 const { promisify } = require('util')
 // const Job = require('../jobs/job.model')
-const { CLIENT, FREELANCER, SOCIAL, ACCEPTED } = require('../../helpers/constants')
+const { CLIENT, FREELANCER, SOCIAL, ACCEPTED, User_role, SA_ROLE_TITLE } = require('../../helpers/constants')
 const unlinkAsync = promisify(fs.unlink)
 const moment = require('moment')
+const Roles = require('../../app/roles/role.model')
+const Admin = require('../admin/admin.model')
+
 // const { sendSMS } = require('../../helpers/messaging')
 exports.userLogin = async (body) => {
   try {
@@ -23,11 +26,18 @@ exports.userLogin = async (body) => {
     }
     const q = body.email ? { email: body.email } : { phone: body.phone }
     const user = await User.findOne(q).populate('userType').lean()
+
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
     if (user.isBanned) {
       throw ErrorHandler('account suspended contact Adminstrator', FORBIDDEN)
+    }
+
+    if(user && user.userType.title === 'Seller'){
+      if(!user.isEmailVerified){
+        throw ErrorHandler('Please wait admin approval pending.', BAD_REQUEST)
+      }
     }
     let validPass
     if (user.authType === SOCIAL) {
@@ -106,6 +116,72 @@ exports.userSignUp = async (body, files) => {
     throw error
   }
 }
+
+exports.sellerSignUp = async (body, files) => {
+  try {
+    const { error } = validUserSchemaPost(body)
+    if (error) {
+      throw ErrorHandler(error.message, BAD_REQUEST)
+    }
+    if ((!body.email || body.email.trim().length === 0)) {
+      throw ErrorHandler('email is required', BAD_REQUEST)
+    }
+    const q = { $or: [{ email: body.email }] }
+    if (body.phone) {
+      q.$or[1] = { phone: body.phone }
+    }
+    const user = await User.findOne(q)
+    if (user) {
+      throw ErrorHandler('email or phone already exist', BAD_REQUEST)
+    }
+    body.fullName = body.firstName || '' + ' '
+    if (body.lastName) {
+      body.fullName = body.fullName + body.fullName
+    }
+    const roleSeller = await Roles.findOne({ title: User_role })
+    body.authType = 'platform';
+    body.isEmailVerified = false; 
+    body.isPhoneVerified = true; 
+    body.signUpCompleted= true; 
+    body.userType= roleSeller._id;
+    const newUser = new User(body)
+    const salt = await bcrypt.genSalt(10)
+    if (body.authType !== SOCIAL) {
+      // save parword's hash if not social sign up else save password as it is
+      newUser.password = await bcrypt.hash(newUser.password, salt)
+    }
+    let saved = await newUser.save()
+    const accessToken = jwt.sign({
+      id: saved._id,
+      fullName: saved.fullName,
+      userType: saved.userType,
+      email: saved.email
+    }, process.env.SECRET_JWT)
+    const templateHbs = 'seller-registration.hbs'
+    if (newUser.email && newUser.email.length) {
+      sendEmail(newUser.email,{name: newUser.fullName},`Welcome on board ${newUser.fullName}`, templateHbs)
+    }
+    let adminRoleId = await Roles.findOne({title: SA_ROLE_TITLE});
+    console.log(adminRoleId);
+    let allAdmins = await Admin.find({role: adminRoleId._id});
+    console.log(allAdmins);
+    if(allAdmins.length >0){
+      const templateAdminHbs = 'admin-approval-neede.hbs'
+      await allAdmins.forEach(element => {
+        if (element.email) {
+          sendEmail(element.email,{name: newUser.fullName},`${newUser.fullName} Seller Registered`, templateAdminHbs)
+        }
+      });
+    }
+    saved = JSON.parse(JSON.stringify(saved))
+    delete saved.password
+    return {user: saved, accessToken: accessToken }
+  } catch (error) {
+    deleteUnprocessedFiles(body)
+    throw error
+  }
+}
+
 exports.genrateOTP = async (currentUser, phone) => {
   try {
     const user = await User.findById(currentUser.id)

@@ -70,4 +70,31 @@ router.post('/change-password', async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+router.post('/get-all-seller', async(req, res) => {
+  try {
+    const sellers = await adminService.getAllSeller(req.query);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.post('/seller-approved', async(req, res) => {
+  try {
+    const sellers = await adminService.sellerApproved(req.body._id);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.post('/seller-disapproved', async(req, res) => {
+  try {
+    const sellers = await adminService.sellerDisapproved(req.body._id);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
 module.exports = router
