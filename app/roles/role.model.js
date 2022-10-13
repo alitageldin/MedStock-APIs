@@ -10,11 +10,7 @@ const Role = mongoose.Schema({
   description: {
     type: String,
     required: true
-  },
-  permissions: [{
-    type: String,
-    required: true
-  }]
+  }
 }, {
   timestamps: true
 })

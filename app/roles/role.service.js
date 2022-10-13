@@ -3,7 +3,6 @@ const { ErrorHandler } = require('../../helpers/ErrorHandler')
 const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
 const Role = require('./role.model')
 const { validRoleSchema } = require('../../helpers/validation.schema')
-const { permissions } = require('../../seeders/permissions')
 const { SA_ROLE_TITLE } = require('../../helpers/constants')
 
 exports.getAll = async (queryParams) => {
@@ -21,7 +20,6 @@ exports.getAll = async (queryParams) => {
     }
     const count = await Role.countDocuments(query)
     const roles = await Role.find(query, {}, { skip: skip, limit: pageSize }).sort({ [sortBy]: order || 1 })
-    // roles = roles.filter(item => item?.permissions.length !== permissions.length)
     return { totalCount: count, data: roles }
   } catch (error) {
     throw error
@@ -62,7 +60,6 @@ exports.update = async (id, data) => {
     }
     role.title = data.title
     role.description = data.description
-    role.permissions = data.permissions
     await role.save()
   } catch (error) {
     throw error

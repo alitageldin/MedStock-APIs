@@ -9,7 +9,8 @@ exports.seedSuperAdmin = async () => {
   const salt = await bcrypt.genSalt(10)
   const roleSA = await Roles.findOne({ title: SA_ROLE_TITLE })
   const newAdmin = new Admin({
-    fullName: SA_FULLNAME,
+    firstName: SA_FULLNAME,
+    lastName: SA_FULLNAME,
     email: SA_EMAIL,
     password: await bcrypt.hash(SA_PASSWORD, salt),
     role: roleSA._id
@@ -17,13 +18,3 @@ exports.seedSuperAdmin = async () => {
   await newAdmin.save()
   console.log('super admin user created succesfully')
 }
-
-// async function seedData () {
-//   await mongoose.connect(process.env.MONGO_URI, async (err, r) => {
-//     if (!err) {
-//       console.log('mongoDB connected successfully to ' + process.env.MONGO_URI)
-//       await seedSuperAdmin()
-//     }
-//   })
-// }
-// seedData()

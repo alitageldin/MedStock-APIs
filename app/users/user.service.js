@@ -9,7 +9,7 @@ const { sendEmail } = require('../emails/mailer')
 const fs = require('fs')
 const { promisify } = require('util')
 // const Job = require('../jobs/job.model')
-const { CLIENT, FREELANCER, SOCIAL, ACCEPTED, User_role, SA_ROLE_TITLE } = require('../../helpers/constants')
+const { CLIENT, FREELANCER, SOCIAL, ACCEPTED, SELLER, BUYER, ADMIN } = require('../../helpers/constants')
 const unlinkAsync = promisify(fs.unlink)
 const moment = require('moment')
 const Roles = require('../../app/roles/role.model')
@@ -25,7 +25,7 @@ exports.userLogin = async (body) => {
       throw ErrorHandler('password is required', BAD_REQUEST)
     }
     const q = body.email ? { email: body.email } : { phone: body.phone }
-    const user = await User.findOne(q).populate('userType').lean()
+    const user = await User.findOne(q).populate('role').lean()
 
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
@@ -34,9 +34,13 @@ exports.userLogin = async (body) => {
       throw ErrorHandler('account suspended contact Adminstrator', FORBIDDEN)
     }
 
-    if(user && user.userType.title === 'Seller'){
+    if(user && user.role.title === SELLER){
       if(!user.isEmailVerified){
         throw ErrorHandler('Please wait admin approval pending.', BAD_REQUEST)
+      }
+    }else{
+      if(!user.isEmailVerified){
+        throw ErrorHandler('Please verify your email.', BAD_REQUEST)
       }
     }
     let validPass
@@ -50,9 +54,11 @@ exports.userLogin = async (body) => {
     }
     const accessToken = jwt.sign({
       id: user._id,
-      fullName: user.fullName,
-      userType: user.userType,
-      email: user.email
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role.title,
+      email: user.email,
+      
     }, process.env.SECRET_JWT)
     delete user.password
     delete user.otp
@@ -77,13 +83,9 @@ exports.userSignUp = async (body, files) => {
     if (body.phone) {
       q.$or[1] = { phone: body.phone }
     }
-    const user = await User.findOne(q)
+    const user = await User.findOne(q).populate('role')
     if (user) {
       throw ErrorHandler('email or phone already exist', BAD_REQUEST)
-    }
-    body.fullName = body.firstName || '' + ' '
-    if (body.lastName) {
-      body.fullName = body.fullName + body.fullName
     }
     const newUser = new User(body)
     const salt = await bcrypt.genSalt(10)
@@ -94,19 +96,20 @@ exports.userSignUp = async (body, files) => {
     let saved = await newUser.save()
     const accessToken = jwt.sign({
       id: saved._id,
-      fullName: saved.fullName,
-      userType: saved.userType,
+      firstName: saved.firstName,
+      lastName: saved.lastName,
+      role: saved.role.title,
       email: saved.email
     }, process.env.SECRET_JWT)
-    const templateHbs = newUser.userType === FREELANCER ? 'registration-freelancer.hbs' : 'registration-client.hbs'
+    const templateHbs = 'registration-buyer.hbs'
     if (newUser.email && newUser.email.length) {
       sendEmail(newUser.email,
         {
-          name: newUser.fullName,
-          userType: newUser.userType,
+          fullName: newUser.firstName + " " + newUser.lastName,
+          email: newUser.email,
           verificationLink: `${process.env.SERVER_URL}user/verify-email/${saved._id}`
         },
-        `Welcome on board ${newUser.fullName}`, templateHbs)
+        `Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
     }
     saved = JSON.parse(JSON.stringify(saved))
     delete saved.password
@@ -130,20 +133,17 @@ exports.sellerSignUp = async (body, files) => {
     if (body.phone) {
       q.$or[1] = { phone: body.phone }
     }
-    const user = await User.findOne(q)
+    const user = await User.findOne(q).populate('role')
     if (user) {
       throw ErrorHandler('email or phone already exist', BAD_REQUEST)
     }
-    body.fullName = body.firstName || '' + ' '
-    if (body.lastName) {
-      body.fullName = body.fullName + body.fullName
-    }
-    const roleSeller = await Roles.findOne({ title: User_role })
+  
+    const roleSeller = await Roles.findOne({ title: SELLER })
     body.authType = 'platform';
     body.isEmailVerified = false; 
     body.isPhoneVerified = true; 
     body.signUpCompleted= true; 
-    body.userType= roleSeller._id;
+    body.role= roleSeller._id;
     const newUser = new User(body)
     const salt = await bcrypt.genSalt(10)
     if (body.authType !== SOCIAL) {
@@ -153,23 +153,22 @@ exports.sellerSignUp = async (body, files) => {
     let saved = await newUser.save()
     const accessToken = jwt.sign({
       id: saved._id,
-      fullName: saved.fullName,
-      userType: saved.userType,
+      firstName: saved.firstName,
+      lastName: saved.lastName,
+      role: saved.role.title,
       email: saved.email
     }, process.env.SECRET_JWT)
     const templateHbs = 'seller-registration.hbs'
     if (newUser.email && newUser.email.length) {
-      sendEmail(newUser.email,{name: newUser.fullName},`Welcome on board ${newUser.fullName}`, templateHbs)
+      sendEmail(newUser.email,{email: newUser.email ,fullName: newUser.firstName + " " + newUser.lastName},`Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
     }
-    let adminRoleId = await Roles.findOne({title: SA_ROLE_TITLE});
-    console.log(adminRoleId);
+    let adminRoleId = await Roles.findOne({title: ADMIN});
     let allAdmins = await Admin.find({role: adminRoleId._id});
-    console.log(allAdmins);
     if(allAdmins.length >0){
       const templateAdminHbs = 'admin-approval-neede.hbs'
       await allAdmins.forEach(element => {
         if (element.email) {
-          sendEmail(element.email,{name: newUser.fullName},`${newUser.fullName} Seller Registered`, templateAdminHbs)
+          sendEmail(element.email, {email: newUser.email, fullName: newUser.firstName + " " + newUser.lastName},`${newUser.firstName + " " + newUser.lastName} Seller Registered Need Admin Approval`, templateAdminHbs)
         }
       });
     }
@@ -184,7 +183,7 @@ exports.sellerSignUp = async (body, files) => {
 
 exports.genrateOTP = async (currentUser, phone) => {
   try {
-    const user = await User.findById(currentUser.id)
+    const user = await User.findById(currentUser.id).populate('role')
     if (!user) {
       throw ErrorHandler('user not found', BAD_REQUEST)
     }
@@ -211,7 +210,7 @@ exports.genrateOTP = async (currentUser, phone) => {
 }
 exports.verifyOTP = async (currentUser, otp) => {
   try {
-    const user = await User.findById(currentUser.id)
+    const user = await User.findById(currentUser.id).populate('role')
     if (!user) {
       throw ErrorHandler('user not found', BAD_REQUEST)
     }
@@ -232,12 +231,12 @@ exports.verifyOTP = async (currentUser, otp) => {
 }
 exports.updateUser = async (req, id) => {
   try {
-    let user = await User.findById(id)
+    let user = await User.findById(id).populate('role')
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
     // adding userType to body for conditional validation
-    req.body.userType = user.userType
+    req.body.role = user.role.title
     const { files } = req
     if (files && files.portfolio) {
       req.body.portfolio = files && files.portfolio && files.portfolio.length ? files.portfolio.map(item => { return `${process.env.SERVER_URL}${item.path}` }) : undefined
@@ -250,7 +249,7 @@ exports.updateUser = async (req, id) => {
     }
 
     // removing userType to since it cannot be updated
-    delete req.body.userType
+    delete req.body.role
 
     if (req.body.password) {
       if (user.authType === SOCIAL) {
@@ -262,20 +261,6 @@ exports.updateUser = async (req, id) => {
     }
     user.firstName = req.body.firstName ? req.body.firstName : user.firstName
     user.lastName = req.body.lastName ? req.body.lastName : user.lastName
-    if (user.fullName) {
-      if (req.body.firstName) {
-        const tempArr = user.fullName.split(' ')
-        tempArr[0] = req.body.firstName
-        user.fullName = tempArr.join(' ')
-      }
-      if (req.body.lastName) {
-        const tempArr = user.fullName.split(' ')
-        tempArr[1] = req.body.lastName
-        user.fullName = tempArr.join(' ')
-      }
-    } else {
-      user.fullName = user.firstName || '' + ' ' + user.lastName || ''
-    }
 
     // user.phone = req.body.phone ? req.body.phone : user.phone
     user.country = req.body.country ? req.body.country : user.country
@@ -301,7 +286,7 @@ exports.updateUser = async (req, id) => {
 }
 exports.getMyProfile = async (id) => {
   try {
-    const user = await User.findById(id).populate('skills').lean()
+    const user = await User.findById(id).populate('role').lean()
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -312,7 +297,7 @@ exports.getMyProfile = async (id) => {
 }
 exports.adminUpdatesUser = async (req, id) => {
   try {
-    const user = await User.findById(id)
+    const user = await User.findById(id).populate('role')
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -337,7 +322,7 @@ exports.getAll = async (queryParams) => {
   try {
     const sortBy = queryParams.sortBy ? queryParams.sortBy : 'createdAt'
     const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
-    const userType = queryParams.userType ? queryParams.userType : null
+    const role = queryParams.role ? queryParams.role : null
     const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
     let skills = queryParams.skills ? queryParams.skills : undefined
     if (typeof skills === 'string') {
@@ -346,7 +331,8 @@ exports.getAll = async (queryParams) => {
     const q = queryParams.q ? queryParams.q : ''
     const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    const query = [{ fullName: { $regex: q, $options: 'i' } },
+    const query = [{ firstName: { $regex: q, $options: 'i' } },
+      { lastName: { $regex: q, $options: 'i' } },
       { email: { $regex: q, $options: 'i' } },
       { phone: { $regex: q, $options: 'i' } },
       { country: { $regex: q, $options: 'i' } },
@@ -389,11 +375,11 @@ exports.getAll = async (queryParams) => {
         }
       }
     }
-    if (userType) {
+    if (role) {
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
-          userType: userType
+          role: role
 
         }
       }
@@ -428,54 +414,14 @@ exports.getAll = async (queryParams) => {
       }
     ])
     users = JSON.parse(JSON.stringify(users))
-    if (userType === FREELANCER && queryParams.jobCount) {
-      for await (const user of users[0].results) {
-        // user.assignedJobs = await Job.countDocuments({ 'assignedTo.id': user._id, status: ACCEPTED })
-      }
-    }
     return { data: users[0].results, totalCount: users[0].count[0]?.totalCount || 0 }
-  } catch (error) {
-    throw error
-  }
-}
-exports.getTopClients = async (queryParams) => {
-  try {
-    const clients = await User.aggregate([
-      { $match: { userType: CLIENT } },
-      {
-        $lookup: {
-          from: 'jobs',
-          localField: '_id',
-          foreignField: 'client.id',
-          as: 'jobs'
-        }
-      },
-      {
-        $project: {
-          fullName: 1,
-          createdAt: 1,
-          rating: 1,
-          phone: 1,
-          jobs: { $size: '$jobs' }
-        }
-      },
-      {
-        $sort: {
-          jobs: -1
-        }
-      }, {
-        $limit: 5
-      }
-    ])
-    console.log(clients)
-    return clients
   } catch (error) {
     throw error
   }
 }
 exports.getById = async (id) => {
   try {
-    const user = await User.findById(id).populate('skills').lean()
+    const user = await User.findById(id).populate('role').lean()
     if (!user) {
       throw ErrorHandler('user not found', NOT_FOUND)
     }
@@ -486,7 +432,7 @@ exports.getById = async (id) => {
 }
 exports.deleteUser = async (id) => {
   try {
-    const user = await User.findById(id).lean()
+    const user = await User.findById(id).populate('role').lean()
     if (!user) {
       throw ErrorHandler('user not found', NOT_FOUND)
     }
@@ -498,7 +444,7 @@ exports.deleteUser = async (id) => {
 }
 exports.deleteFile = async (userId, { attachmentType, address }) => {
   try {
-    const dbUserInstance = await User.findById(userId)
+    const dbUserInstance = await User.findById(userId).populate('role')
     if (!dbUserInstance) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -531,7 +477,7 @@ exports.verifyEmail = async (id) => {
     if (!id) {
       throw ErrorHandler('id required in params', BAD_REQUEST)
     }
-    const user = await User.findById(id)
+    const user = await User.findById(id).populate('role')
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -675,14 +621,14 @@ exports.reSendVerificationEmail = async (email) => {
     if (!email) {
       throw ErrorHandler('email is required', BAD_REQUEST)
     }
-    const user = await User.findOne({ email: email })
+    const user = await User.findOne({ email: email }).populate('role')
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
     sendEmail(user.email,
       {
-        name: user.fullName,
-        userType: user.userType,
+        name: user.firstName + " " +user.lastName,
+        role: user.role.title,
         verificationLink: `${process.env.SERVER_URL}user/verify-email/${user._id}`
       },
       'Email Verification', 'verification-email.hbs')
@@ -697,19 +643,20 @@ exports.forgetPassword = async (body) => {
     if (!body.email) {
       throw ErrorHandler('email is required', BAD_REQUEST)
     }
-    const user = await User.findOne({ email: body.email })
+    const user = await User.findOne({ email: body.email }).populate('role')
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
     const accessToken = jwt.sign({
-      fullName: user.fullName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role.title,
       id: user._id,
-      userType: user.userType
     }, process.env.SECRET_JWT)
     sendEmail(user.email,
       {
-        name: user.fullName,
-        userType: user.userType,
+        fullName: user.firstName + " " + user.lastName,
+        email: user.email,
         forgetPasswordLink: `${process.env.SERVER_URL}user/reset-password/${accessToken}`
       },
       'Forget Password', 'forget-password.hbs')
@@ -728,7 +675,7 @@ exports.changePassword = async (body) => {
     if (!payload.id) {
       throw ErrorHandler('id not found', BAD_REQUEST)
     }
-    const user = await User.findById(payload.id)
+    const user = await User.findById(payload.id).populate('role')
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -741,8 +688,9 @@ exports.changePassword = async (body) => {
     await user.save()
     const accessToken = jwt.sign({
       id: user._id,
-      fullName: user.fullName,
-      userType: user.userType,
+      firstName: user.fistName,
+      lastName: user.lastName,
+      role: user.role.title,
       email: user.email
     }, process.env.SECRET_JWT)
     return accessToken
@@ -760,8 +708,8 @@ exports.isUser = async (req, res, next) => {
       if (!payload) {
         return res.status(UN_AUTHORIZED).send({ message: 'invalid auth token found' })
       }
-      if (payload.userType === CLIENT ||
-        payload.userType === FREELANCER
+      if (payload.role === BUYER ||
+        payload.role === SELLER
       ) {
         req.user = payload
         next()

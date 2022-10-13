@@ -2,10 +2,6 @@ const mongoose = require('mongoose')
 const { SOCIAL, PLATFORM } = require('../../helpers/constants')
 
 const User = mongoose.Schema({
-  fullName: {
-    type: String,
-    max: 30
-  },
   firstName: {
     type: String,
     max: 30
@@ -31,34 +27,23 @@ const User = mongoose.Schema({
     enum: [SOCIAL, PLATFORM],
     default: PLATFORM
   },
-  userType: {
+  role: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'roles',
     required: true,
-  }, // can be 'client'/'freelancer'
-  phone: {
-    type: String,
-    default: ''
   },
-  unverfiedPhone: {
+  phone: {
     type: String,
     default: ''
   },
   country: {
     type: String,
     default: ''
-
   },
   address: {
     type: String,
     default: ''
   },
-  resume: {
-    type: String
-  },
-  portfolio: [{
-    type: String
-  }],
   profileImage: {
     type: String
   },
@@ -86,31 +71,14 @@ const User = mongoose.Schema({
     type: Boolean,
     default: false
   },
-  rating: {
-    type: Number,
-    default: 0
-  },
   dob: {
     type: Date
   },
-  // clientProfession: {
-  //   type: String
-  // },
   fcmToken: { type: String },
-  skills: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'categories'
-    }
-  ],
   heardFrom: {
     type: String,
     default: ''
   },
-  // aboutMe: {
-  //   type: String,
-  //   default: ''
-  // },
   paymentMethod: [{
     securityCode: String,
     expiry: String

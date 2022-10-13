@@ -38,5 +38,11 @@ exports.USER_authType = 'PLATFORM'
 exports.USER_isEmailVerified = true
 exports.USER_isPhoneVerified = true
 exports.USER_signUpCompleted = true
-exports.USER_password = 'MedStock@321',
+exports.USER_password = 'MedStock@321'
 exports.User_role = 'Seller'
+
+
+//Roles
+exports.ADMIN = "Super Admin"
+exports.SELLER= "Seller"
+exports.BUYER = "Buyer"

@@ -1,14 +1,14 @@
 exports.ROLES = [
   {
     title:"Super Admin",
-    description: "He has all the permissions"
+    description: "Can perform all operations"
   },
   {
     title:"Seller",
-    description: "He has some permissions"
+    description: "Can add and sell the product"
   },
   {
-    title:"User",
-    description: "He has some permissions"
+    title:"Buyer",
+    description: "Can buy the products"
   }
 ]

@@ -1,4 +1,3 @@
-const Permission = require('../app/permissions/permission.model')
 const Role = require('../app/roles/role.model')
 const { SA_ROLE_TITLE } = require('../helpers/constants')
 const { ROLES } = require('../helpers/hard-coded-roles')
@@ -6,7 +5,6 @@ const { ROLES } = require('../helpers/hard-coded-roles')
 require('dotenv').config()
 
 exports.seedRole = async () => {
-  const perms = await Permission.findOne()
   await Role.deleteMany()
   if (ROLES.length > 0) {
     await ROLES.forEach(element=> {
@@ -14,14 +12,12 @@ exports.seedRole = async () => {
       if(element.title === SA_ROLE_TITLE){
         role = new Role({
           title: SA_ROLE_TITLE,
-          description: 'He has all the permissions',
-          permissions: perms.values
+          description: 'He has all the permissions'
         })
       }else{
         role = new Role({
           title: element.title,
-          description: element.description,
-          permissions: []
+          description: element.description
         })
       }
       role.save()

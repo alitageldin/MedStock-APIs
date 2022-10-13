@@ -1,10 +1,16 @@
 const mongoose = require('mongoose')
 
 const Admin = mongoose.Schema({
-  fullName: {
+  firstName: {
     type: String,
     required: true,
     mn: [6, 'Must be at least 6, got {VALUE}'],
+    max: 30
+  },
+  lastName: {
+    type: String,
+    required: false,
+    mn: [1, 'Must be at least 1, got {VALUE}'],
     max: 30
   },
   email: {

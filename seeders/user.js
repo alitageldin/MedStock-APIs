@@ -2,13 +2,13 @@
 const User = require('../app/users/user.model')
 const Roles = require('../app/roles/role.model')
 const bcrypt = require('bcrypt')
-const { USER_fullname, USER_firstName, USER_lastName, USER_authType, USER_email, USER_isEmailVerified, 
-USER_isPhoneVerified, USER_password, USER_signUpCompleted, User_role } = require('../helpers/constants')
+const { USER_fullname, USER_firstName, USER_lastName, USER_email, USER_isEmailVerified, 
+USER_isPhoneVerified, USER_password, USER_signUpCompleted, SELLER } = require('../helpers/constants')
 require('dotenv').config()
 exports.seedSeller = async () => {
   await User.deleteMany()
   const salt = await bcrypt.genSalt(10)
-  const roleSA = await Roles.findOne({ title: User_role })
+  const roleSE = await Roles.findOne({ title: SELLER})
   const sellerUser = new User({
     firstName : USER_firstName, 
     lastName : USER_lastName, 
@@ -19,7 +19,7 @@ exports.seedSeller = async () => {
     password: await bcrypt.hash(USER_password, salt), 
     fullName: USER_fullname,
     email: USER_email,
-    userType: roleSA._id
+    role: roleSE._id
   })
   await sellerUser.save()
   console.log('Seller user created succesfully')

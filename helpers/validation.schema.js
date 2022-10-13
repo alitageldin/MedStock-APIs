@@ -4,8 +4,7 @@ const { CLIENT, FREELANCER } = require('./constants')
 exports.validRoleSchema = (data) => {
   return Joi.object({
     title: Joi.string().required().min(2),
-    description: Joi.string().required().min(2),
-    permissions: Joi.array().required().min(1)
+    description: Joi.string().required().min(2)
   }).validate(data)
 }
 exports.validPermSchema = (data) => {

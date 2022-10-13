@@ -30,8 +30,8 @@ exports.login = async (email, password) => {
     const accessToken = jwt.sign({
       id: user._id,
       isAdmin: true,
-      permissions: user.role?.permissions || [],
-      fullName: user.fullName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email
     }, process.env.SECRET_JWT)
     delete user.password
@@ -107,7 +107,8 @@ exports.getAll = async (queryParams) => {
     const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
     const query = {
-      $or: [{ fullName: { $regex: q, $options: 'i' } },
+      $or: [{ firstName: { $regex: q, $options: 'i' } },
+      { lastName: { $regex: q, $options: 'i' } },
         { email: { $regex: q, $options: 'i' } }],
       'role.title': { $ne: SA_ROLE_TITLE }
     }
@@ -175,19 +176,6 @@ exports.isAdmin = async (req, res, next) => {
     return res.status(INTERNAL_ERR).send({ message: error.message })
   }
 }
-exports.checkAdminPermission = (permission) => {
-  return (req, res, next) => {
-    try {
-      if (req.user && req.user.permissions.findIndex(ele => { return ele === permission }) > -1) {
-        next()
-      } else {
-        return res.status(FORBIDDEN).send({ message: 'access denied' })
-      }
-    } catch (error) {
-      return res.status(INTERNAL_ERR).send({ message: error.message })
-    }
-  }
-}
 exports.forgetPassword = async (body) => {
   try {
     if (!body.email) {
@@ -198,14 +186,14 @@ exports.forgetPassword = async (body) => {
       throw ErrorHandler('no associated admin found', BAD_REQUEST)
     }
     const accessToken = jwt.sign({
-      fullName: admin.fullName,
+      fullName: admin.fistName + " " + admin.lastName,
       id: admin._id
     }, process.env.SECRET_JWT)
 
     await sendEmail(admin.email,
       {
         email: admin.email,
-        fullName: admin.fullName,
+        fullName: admin.firstName + " " + admin.lastName,
         forgetPasswordLink: `${process.env.SERVER_URL}auth/reset-password/${accessToken}`
       },
       'Forget Password', 'admin-forget-password.hbs')
@@ -234,8 +222,8 @@ exports.changePassword = async (body) => {
     const accessToken = jwt.sign({
       id: admin._id,
       isAdmin: true,
-      permissions: admin.role.permissions,
-      fullName: admin.fullName,
+      firstName: admin.firstName,
+      lastName: admin.lastName,
       email: admin.email
     }, process.env.SECRET_JWT)
     return accessToken
@@ -252,7 +240,8 @@ exports.getAllSeller = async(queryParams) =>{
     const q = queryParams.q ? queryParams.q : ''
     const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    const query = [{ fullName: { $regex: q, $options: 'i' } },
+    const query = [{ fistName: { $regex: q, $options: 'i' } },
+    { lastName: { $regex: q, $options: 'i' } },
       { email: { $regex: q, $options: 'i' } },
       { phone: { $regex: q, $options: 'i' } },
       { country: { $regex: q, $options: 'i' } },
@@ -299,7 +288,7 @@ exports.getAllSeller = async(queryParams) =>{
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
-          userType: userType._id
+          role: userType._id
 
         }
       }
@@ -350,7 +339,7 @@ exports.sellerApproved = async(seller_id) =>{
   seller.save();
   const templateAdminHbs = 'seller-approved.hbs'
   if (seller.email) {
-        sendEmail(seller.email,'',`${seller.fullName} Approved as Seller`, templateAdminHbs)
+        sendEmail(seller.email,{fullName: seller.firstName + " " + seller.lastName},`Approved as Seller`, templateAdminHbs)
   };
   return seller;
 }
@@ -361,7 +350,7 @@ exports.sellerDisapproved = async(seller_id) =>{
   seller.save();
   const templateAdminHbs = 'seller-disapproved.hbs'
   if (seller.email) {
-        sendEmail(seller.email,'',`${seller.fullName} Disapproved as Seller`, templateAdminHbs)
+        sendEmail(seller.email,{fullName: seller.firstName + " " + seller.lastName},`Rejected as Seller`, templateAdminHbs)
   };
   return seller;
 }

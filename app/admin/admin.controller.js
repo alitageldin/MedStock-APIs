@@ -1,5 +1,4 @@
 const express = require('express')
-const { PERMISSIONS } = require('../../helpers/hard-coded-perms')
 const { INTERNAL_ERR, SUCCESS, CREATED } = require('../../helpers/HTTP.CODES')
 const adminService = require('./admin.service')
 const router = express.Router()
@@ -13,7 +12,7 @@ router.post('/login', async (req, res) => {
     return res.status(error.status || INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.post('/', adminService.isAdmin, adminService.checkAdminPermission(PERMISSIONS.CREATE_ADMIN), async (req, res) => {
+router.post('/', adminService.isAdmin, async (req, res) => {
   try {
     await adminService.create(req.body)
     return res.status(CREATED).send({})
@@ -21,7 +20,7 @@ router.post('/', adminService.isAdmin, adminService.checkAdminPermission(PERMISS
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.get('/', adminService.isAdmin, adminService.checkAdminPermission(PERMISSIONS.VIEW_ADMIN), async (req, res) => {
+router.get('/', adminService.isAdmin, async (req, res) => {
   try {
     const data = await adminService.getAll(req.query)
     return res.status(SUCCESS).send({ ...data })
@@ -29,7 +28,7 @@ router.get('/', adminService.isAdmin, adminService.checkAdminPermission(PERMISSI
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.get('/:id', adminService.isAdmin, adminService.checkAdminPermission(PERMISSIONS.VIEW_ADMIN), async (req, res) => {
+router.get('/:id', adminService.isAdmin, async (req, res) => {
   try {
     const data = await adminService.getById(req.params.id)
     return res.status(SUCCESS).send({ ...data })
@@ -37,7 +36,7 @@ router.get('/:id', adminService.isAdmin, adminService.checkAdminPermission(PERMI
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.put('/:id', adminService.isAdmin, adminService.checkAdminPermission(PERMISSIONS.UPDATE_ADMIN), async (req, res) => {
+router.put('/:id', adminService.isAdmin, async (req, res) => {
   try {
     const updatedUser = await adminService.update(req.body, req.params.id)
     return res.status(SUCCESS).send({ updatedUser })
@@ -45,7 +44,7 @@ router.put('/:id', adminService.isAdmin, adminService.checkAdminPermission(PERMI
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.delete('/:id', adminService.isAdmin, adminService.checkAdminPermission(PERMISSIONS.DELETE_ADMIN), async (req, res) => {
+router.delete('/:id', adminService.isAdmin, async (req, res) => {
   try {
     await adminService.delete(req.params.id)
     return res.status(SUCCESS).send({})
