@@ -22,7 +22,7 @@ exports.sendEmail = async (recipient, data, subject, templateName, attachments) 
     })
     await transporter.sendMail({
       from: process.env.EMAIL,
-      to: 'awaisarif1993@gmail.com',
+      to: recipient,
       subject: subject,
       html: template(data),
       attachments: attachments
