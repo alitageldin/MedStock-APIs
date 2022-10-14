@@ -11,15 +11,12 @@ app.use(function (req, res, next) {
 app.use(cors())
 const http = require('http').createServer(app)
 
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || 4000
 app.use(cors())
 app.use(express.json())
 
 app.listen(PORT, () => {
   console.log('App listening on ' + PORT)
-})
-http.listen(4000, function () {
-  console.log('listening on port 4000')
 })
 
 app.get('/', function (req, res) {
@@ -34,5 +31,5 @@ mongoose.connect(process.env.MONGO_URI, (err) => {
     console.error(err)
   }
 })
-const routes = require('./routes')
+const routes = require('./app/routes')
 app.use(routes)
