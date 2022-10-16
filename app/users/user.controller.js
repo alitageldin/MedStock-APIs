@@ -26,14 +26,14 @@ const { isAdmin } = require('../admin/admin.service')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads')
+    cb(null, 'uploads/images/user-profile')
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '.' + file.originalname) // mime type gives ext of file
   }
 })
 
-const uploadFile = multer({ dest: 'uploads/', storage: storage })
+const uploadFile = multer({ dest: 'uploads/images/user-profile/', storage: storage })
 
 /*
  *
@@ -42,19 +42,19 @@ const uploadFile = multer({ dest: 'uploads/', storage: storage })
  */
 
 router.post('/sign-up', uploadFile.fields([
-  { name: 'portfolio', maxCount: 10 },
-  { name: 'resume', maxCount: 1 },
   { name: 'profileImage', maxCount: 1 }
 ]), async (req, res) => {
   try {
     const accessToken = await userSignUp(req.body, req.files)
-    return res.status(SUCCESS).send({ accessToken })
+    return res.status(SUCCESS).send(accessToken)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
 
-router.post('/seller-sign-up', async (req, res) => {
+router.post('/seller-sign-up',uploadFile.fields([
+  { name: 'profileImage', maxCount: 1 }
+]), async (req, res) => {
   try {
     const accessToken = await sellerSignUp(req.body, req.files)
     return res.status(SUCCESS).send(accessToken)
@@ -120,12 +120,11 @@ router.post('/resend-verify-email', async (req, res) => {
   }
 })
 router.put('/me', isUser, uploadFile.fields([
-  { name: 'portfolio', maxCount: 10 },
-  { name: 'resume', maxCount: 1 },
   { name: 'profileImage', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    const updatedUser = await updateUser(req, req.user.id)
+    console.log(req);
+    const updatedUser = await updateUser(req, req.body.id)
     return res.status(SUCCESS).send({ updatedUser })
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
@@ -133,7 +132,7 @@ router.put('/me', isUser, uploadFile.fields([
 })
 router.get('/me', isUser, async (req, res) => {
   try {
-    const userProfile = await getMyProfile(req.user.id)
+    const userProfile = await getMyProfile(req.body.id)
     return res.status(SUCCESS).send({ ...userProfile })
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })

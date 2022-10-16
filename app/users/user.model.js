@@ -10,6 +10,16 @@ const User = mongoose.Schema({
     type: String,
     max: 30
   },
+  username:{
+    type: String,
+    max: 30,
+    unique: true,
+  },
+  pharmacyName:{
+    type: String,
+    max: 30,
+    default: ''
+  },
   email: {
     type: String,
     lowercase: true,
@@ -44,7 +54,18 @@ const User = mongoose.Schema({
     type: String,
     default: ''
   },
+  city: {
+    type: String,
+    default: ''
+  },
+  region: {
+    type: String,
+    default: ''
+  },
   profileImage: {
+    type: String
+  },
+  license: {
     type: String
   },
   isEmailVerified: {
@@ -76,6 +97,10 @@ const User = mongoose.Schema({
   },
   fcmToken: { type: String },
   heardFrom: {
+    type: String,
+    default: ''
+  },
+  businessId: {
     type: String,
     default: ''
   },

@@ -7,6 +7,22 @@ exports.validRoleSchema = (data) => {
     description: Joi.string().required().min(2)
   }).validate(data)
 }
+exports.validCategorySchema = (data) => {
+  return Joi.object({
+    title: Joi.string().required().min(2),
+    description: Joi.string()
+  }).validate(data)
+}
+exports.validProductSchema = (data) =>{
+  return Joi.object({
+    name: Joi.string().required(),
+    price: Joi.string().required().min(2),
+    expiryDate : Joi.date(),
+    notes : Joi.string(),
+    userId: Joi.string(),
+    categoryId: Joi.string(),
+  }).validate(data)
+}
 exports.validPermSchema = (data) => {
   return Joi.object({
     name: Joi.string().required().min(2),
@@ -17,6 +33,10 @@ exports.validUserSchemaPost = (user) => {
   return Joi.object({
     firstName: Joi.string(),
     lastName: Joi.string(),
+    username: Joi.string(),
+    pharmacyName: Joi.string(),
+    region: Joi.string(),
+    businessId: Joi.string(),
     dob: Joi.date(),
     email: Joi.string().required(),
     password: Joi.string().required().min(6),

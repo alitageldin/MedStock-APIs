@@ -69,9 +69,7 @@ exports.userLogin = async (body) => {
 }
 exports.userSignUp = async (body, files) => {
   try {
-    body.portfolio = files?.portfolio && files.portfolio.length ? files.portfolio.map(item => { return `${process.env.SERVER_URL}${item.path}` }) : undefined
-    body.resume = files?.resume && files.resume.length ? files.resume.map(item => { return `${process.env.SERVER_URL}${item.path}` })[0] : undefined
-    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.SERVER_URL}${item.path}` })[0] : undefined
+    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}` })[0] : undefined
     const { error } = validUserSchemaPost(body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -87,6 +85,8 @@ exports.userSignUp = async (body, files) => {
     if (user) {
       throw ErrorHandler('email or phone already exist', BAD_REQUEST)
     }
+    const roleBuyer = await Roles.findOne({ title: BUYER });
+    body.role= roleBuyer._id;
     const newUser = new User(body)
     const salt = await bcrypt.genSalt(10)
     if (body.authType !== SOCIAL) {
@@ -122,6 +122,7 @@ exports.userSignUp = async (body, files) => {
 
 exports.sellerSignUp = async (body, files) => {
   try {
+    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}` })[0] : undefined
     const { error } = validUserSchemaPost(body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -174,7 +175,7 @@ exports.sellerSignUp = async (body, files) => {
     }
     saved = JSON.parse(JSON.stringify(saved))
     delete saved.password
-    return {user: saved, accessToken: accessToken }
+    return {user: saved}
   } catch (error) {
     deleteUnprocessedFiles(body)
     throw error
@@ -231,6 +232,7 @@ exports.verifyOTP = async (currentUser, otp) => {
 }
 exports.updateUser = async (req, id) => {
   try {
+    console.log(id);
     let user = await User.findById(id).populate('role')
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
@@ -238,14 +240,8 @@ exports.updateUser = async (req, id) => {
     // adding userType to body for conditional validation
     req.body.role = user.role.title
     const { files } = req
-    if (files && files.portfolio) {
-      req.body.portfolio = files && files.portfolio && files.portfolio.length ? files.portfolio.map(item => { return `${process.env.SERVER_URL}${item.path}` }) : undefined
-    }
-    if (files && files.resume) {
-      req.body.resume = files && files.resume && files.resume.length ? files.resume.map(item => { return `${process.env.SERVER_URL}${item.path}` })[0] : undefined
-    }
     if (files && files.profileImage) {
-      req.body.profileImage = files && files.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.SERVER_URL}${item.path}` })[0] : undefined
+      req.body.profileImage = files && files.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}` })[0] : undefined
     }
 
     // removing userType to since it cannot be updated
@@ -264,11 +260,15 @@ exports.updateUser = async (req, id) => {
 
     // user.phone = req.body.phone ? req.body.phone : user.phone
     user.country = req.body.country ? req.body.country : user.country
+
+    user.username = user.username //req.body.username ? req.body.username : user.username
+    user.pharmacyName = req.body.pharmacyName ? req.body.pharmacyName : user.pharmacyName
+    user.city = req.body.city ? req.body.city : user.city
+    user.region = req.body.region ? req.body.region : user.region
+    user.businessId = req.body.businessId ? req.body.businessId : user.businessId
+
     user.address = req.body.address ? req.body.address : user.address
-    user.resume = req.body.resume ? req.body.resume : user.resume
-    user.portfolio = req.body.portfolio ? [...user.portfolio, ...req.body.portfolio] : user.portfolio
     user.profileImage = req.body.profileImage ? req.body.profileImage : user.profileImage
-    user.skills = req.body.skills ? req.body.skills : user.skills
     user.heardFrom = req.body.heardFrom ? req.body.heardFrom : user.heardFrom
     // user.aboutMe = req.body.aboutMe ? req.body.aboutMe : user.aboutMe
     user.dob = req.body.dob ? req.body.dob : user.dob
@@ -276,7 +276,7 @@ exports.updateUser = async (req, id) => {
     user.signUpCompleted = (req.body.signUpCompleted && typeof (JSON.parse(req.body.signUpCompleted)) === 'boolean') ? JSON.parse(req.body.signUpCompleted) : user.signUpCompleted
     await user.save()
     user = JSON.parse(JSON.stringify(user))
-    // delete user.password
+    delete user.password
 
     return user
   } catch (error) {
@@ -290,6 +290,8 @@ exports.getMyProfile = async (id) => {
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
+    delete user.password
+
     return user
   } catch (error) {
     throw error
@@ -741,15 +743,7 @@ exports.isAdminOrUser = async (req, res, next) => {
 }
 
 const deleteUnprocessedFiles = async (body) => {
-  if (body.resume && body.resume.length) {
-    await unlinkAsync(body.resume.split(process.env.SERVER_URL)[1])
-  }
   if (body.profileImage && body.profileImage.length) {
-    await unlinkAsync(body.profileImage.split(process.env.SERVER_URL)[1])
-  }
-  if (body.portfolio && body.portfolio.length) {
-    for await (const g of body.portfolio) {
-      unlinkAsync(g.split(process.env.SERVER_URL)[1])
-    }
+    await unlinkAsync(body.profileImage.split(process.env.BK_SERVER_URL)[1])
   }
 }

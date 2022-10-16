@@ -24,7 +24,7 @@ exports.PLATFORM = 'platform'
 
 // super admin --- values
 exports.SA_FULLNAME = 'MedStock Admin'
-exports.SA_EMAIL = 'admin@medstock.com'
+exports.SA_EMAIL = 'developer.medstock@gmail.com'
 exports.SA_PASSWORD = 'MedStock@321'
 exports.SA_ROLE_TITLE = 'Super Admin'
 
