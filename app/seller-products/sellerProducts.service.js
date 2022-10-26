@@ -1,9 +1,9 @@
 /* eslint-disable no-useless-catch */
 const { ErrorHandler } = require('../../helpers/ErrorHandler')
 const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
-const Product = require('./product.model')
+const Product = require('./sellerProducts.model')
 const { validProductSchema } = require('../../helpers/validation.schema')
-const ProductImage = require('./productImages.model')
+const ProductImage = require('./sellerProductImages.model')
 const { default: mongoose } = require('mongoose')
 
 exports.getAll = async (queryParams) => {
@@ -35,18 +35,10 @@ exports.getAll = async (queryParams) => {
           results: [
             {
               $lookup: {
-                from: 'productimages',
+                from: 'sellerProductImages',
                 localField: '_id',
-                foreignField: 'productId',
+                foreignField: 'sellerProductId',
                 as: 'productImages'
-              }
-            },
-            {
-              $lookup: {
-                from: 'categories',
-                localField: 'categoryId',
-                foreignField: '_id',
-                as: 'category'
               }
             },
             ...pipline
@@ -116,9 +108,9 @@ exports.getSellerProducts = async (queryParams) => {
           results: [
             {
               $lookup: {
-                from: 'productimages',
+                from: 'sellerProductImages',
                 localField: '_id',
-                foreignField: 'productId',
+                foreignField: 'sellerProductId',
                 as: 'productImages'
               }
             },
@@ -163,7 +155,7 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
+    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
     const { error } = validProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -182,11 +174,9 @@ exports.create = async (data, files) => {
     throw error
   }
 }
-exports.update = async (id, req, files) => {
+exports.update = async (id, data) => {
   try {
-    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
-    console.log(req.body);
-    const { error } = validProductSchema(req.body)
+    const { error } = validProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
     }
@@ -194,32 +184,9 @@ exports.update = async (id, req, files) => {
     if (!product) {
       throw ErrorHandler('No product found', NOT_FOUND)
     }
-    product.name = req.body.name ? req.body.name : product.name;
-    product.price = req.body.price ? req.body.price :product.price
-    product.expiryDate = req.body.expiryDate ? req.body.expiryDate :  product.expiryDate
-    product.categoryId = req.body.categoryId ? req.body.categoryId : product.categoryId
-
+    product.title = data.title
+    product.description = data.description
     await product.save()
-    if(productImages && productImages.length > 0){
-      let productImage = await ProductImage.findOne({'productId': product._id});
-      if(productImage){
-        productImage.path = productImages[0].path;
-        productImage.productId = product._id;
-        productImage.save();
-      }else{
-        console.log(productImages)
-        if(productImages){
-          await productImages.forEach(elem => {
-            let productImage = new ProductImage();
-            productImage.path = elem;
-            productImage.productId = product._id;
-            productImage.save();
-          })
-        }
-        
-      }
-    }
-    
   } catch (error) {
     throw error
   }

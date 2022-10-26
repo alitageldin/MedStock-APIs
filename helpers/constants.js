@@ -29,12 +29,16 @@ exports.SA_PASSWORD = 'MedStock@321'
 exports.SA_ROLE_TITLE = 'Super Admin'
 
 
-//user --- values
+//seller --- values
 exports.USER_fullname = 'MedStock User'
 exports.USER_firstName = 'MedStock'
 exports.USER_lastName = 'User'
 exports.USER_email = 'user@medstock.com'
 exports.USER_authType = 'PLATFORM'
+exports.USER_PHARMACYNAME = 'Green Pharma TD'
+exports.USER_BUSINESSID = 'GR-PHR-612301982059'
+exports.USER_ADDRESS = 'Street 10 North America 10'
+exports.USER_PHONE = "6161125123"
 exports.USER_isEmailVerified = true
 exports.USER_isPhoneVerified = true
 exports.USER_signUpCompleted = true

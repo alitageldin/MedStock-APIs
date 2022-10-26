@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const { seedSuperAdmin } = require('./admin')
 const { seedRole } = require('./role')
 const { seedSeller } = require('./user')
+const { cateogry } = require('./category')
 
 async function seedData () {
   mongoose.connect(process.env.MONGO_URI, async (err, r) => {
@@ -10,6 +11,7 @@ async function seedData () {
       try {
         await seedRole()
         await seedSuperAdmin();
+        await cateogry();
         await seedSeller();
       } catch (error) {
         console.log(error)

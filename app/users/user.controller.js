@@ -52,16 +52,6 @@ router.post('/sign-up', uploadFile.fields([
   }
 })
 
-router.post('/seller-sign-up',uploadFile.fields([
-  { name: 'profileImage', maxCount: 1 }
-]), async (req, res) => {
-  try {
-    const accessToken = await sellerSignUp(req.body, req.files)
-    return res.status(SUCCESS).send(accessToken)
-  } catch (error) {
-    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
-  }
-})
 
 router.post('/login', async (req, res) => {
   try {
@@ -216,6 +206,15 @@ router.put('/:id', isAdmin, async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+router.put('/becomeASeller/:id', isUser, async (req, res) => {
+  try {
+    const updatedUser = await becomeASeller(req.params.id)
+    return res.status(SUCCESS).send(updatedUser)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
 router.put('/attachment/:id', isAdmin, async (req, res) => {
   try {
     await deleteFile(req.params.id, req.body)

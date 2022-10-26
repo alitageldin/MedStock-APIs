@@ -31,5 +31,6 @@ mongoose.connect(process.env.MONGO_URI, (err) => {
     console.error(err)
   }
 })
+app.use(express.static('uploads'));
 const routes = require('./app/routes')
 app.use(routes)

@@ -37,14 +37,10 @@ const User = mongoose.Schema({
     enum: [SOCIAL, PLATFORM],
     default: PLATFORM
   },
-  role: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'roles',
-    required: true,
-  },
   phone: {
     type: String,
-    default: ''
+    default: '',
+    unique: true
   },
   country: {
     type: String,
@@ -65,9 +61,6 @@ const User = mongoose.Schema({
   profileImage: {
     type: String
   },
-  license: {
-    type: String
-  },
   isEmailVerified: {
     type: Boolean,
     default: false
@@ -79,6 +72,22 @@ const User = mongoose.Schema({
   isPhoneVerified: {
     type: Boolean,
     default: false
+  },
+  ispendingApproval: {
+    type: Boolean,
+    default: false
+  },
+  isSeller:{
+    type: Boolean,
+    default: false
+  },
+  isBuyer:{
+    type: Boolean,
+    default: false
+  },
+  selectedProfile:{
+    type: String,
+    default: ''
   },
   signUpCompleted: {
     type: Boolean,

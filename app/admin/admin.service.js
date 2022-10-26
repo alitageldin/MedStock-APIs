@@ -259,6 +259,13 @@ exports.getAllSeller = async(queryParams) =>{
       { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
+
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        ispendingApproval: false
+      }
+    }
     if (queryParams.isBanned) {
       pipline[matchIndex] = {
         $match: {
@@ -284,13 +291,256 @@ exports.getAllSeller = async(queryParams) =>{
     //     }
     //   }
     // }
-    if (userType) {
+
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isSeller: true
+
+      }
+    }
+    // if (userType) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       role: userType._id
+
+    //     }
+    //   }
+    // }
+
+    let users = await userModel.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'skills',
+                foreignField: '_id',
+                as: 'skills'
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'skills',
+                foreignField: '_id',
+                as: 'skills'
+              }
+            },
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+    users = JSON.parse(JSON.stringify(users))
+    // if (userType.title === 'Seller' && queryParams.jobCount) {
+    //   for await (const user of users[0].results) {
+    //     user.assignedJobs = await Job.countDocuments({ 'assignedTo.id': user._id, status: ACCEPTED })
+    //   }
+    // }
+    return { data: users[0].results, totalCount: users[0].count[0]?.totalCount || 0 }
+  } catch (error) {
+    throw error
+  }
+}
+
+exports.getAllBuyer = async(queryParams) =>{
+  try {
+    const sortBy = queryParams.sortBy ? queryParams.sortBy : 'createdAt'
+    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    const userType = await Role.findOne({title: 'Seller'});
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+    const q = queryParams.q ? queryParams.q : ''
+    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+    const query = [{ fistName: { $regex: q, $options: 'i' } },
+    { lastName: { $regex: q, $options: 'i' } },
+      { email: { $regex: q, $options: 'i' } },
+      { phone: { $regex: q, $options: 'i' } },
+      { country: { $regex: q, $options: 'i' } },
+      { address: { $regex: q, $options: 'i' } }
+      // { aboutMe: { $regex: q, $options: 'i' } }
+    ]
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+
+    // pipline[matchIndex] = {
+    //   $match: {
+    //     ...pipline[matchIndex].$match,
+    //     ispendingApproval: false
+    //   }
+    // }
+    if (queryParams.isBanned) {
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
-          role: userType._id
-
+          isBanned: JSON.parse(queryParams.isBanned)
         }
+      }
+    }
+    // if (queryParams.isProfileVerified) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       isProfileVerified: JSON.parse(queryParams.isProfileVerified)
+    //     }
+    //   }
+    // }
+    // if (skills) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       $or: [{ 'skills.name': { $in: skills } },
+    //         { 'skills.path': { $in: skills.map(s => { return new RegExp(`,${s},`) }) } }]
+    //     }
+    //   }
+    // }
+
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isBuyer: true
+
+      }
+    }
+    // if (userType) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       role: userType._id
+
+    //     }
+    //   }
+    // }
+
+    let users = await userModel.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'skills',
+                foreignField: '_id',
+                as: 'skills'
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'skills',
+                foreignField: '_id',
+                as: 'skills'
+              }
+            },
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+    users = JSON.parse(JSON.stringify(users))
+    // if (userType.title === 'Seller' && queryParams.jobCount) {
+    //   for await (const user of users[0].results) {
+    //     user.assignedJobs = await Job.countDocuments({ 'assignedTo.id': user._id, status: ACCEPTED })
+    //   }
+    // }
+    return { data: users[0].results, totalCount: users[0].count[0]?.totalCount || 0 }
+  } catch (error) {
+    throw error
+  }
+}
+
+exports.getAllPendingApprovalSeller = async(queryParams) =>{
+  try {
+    const sortBy = queryParams.sortBy ? queryParams.sortBy : 'createdAt'
+    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    const userType = await Role.findOne({title: 'Seller'});
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+    const q = queryParams.q ? queryParams.q : ''
+    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+    const query = [{ fistName: { $regex: q, $options: 'i' } },
+    { lastName: { $regex: q, $options: 'i' } },
+      { email: { $regex: q, $options: 'i' } },
+      { phone: { $regex: q, $options: 'i' } },
+      { country: { $regex: q, $options: 'i' } },
+      { address: { $regex: q, $options: 'i' } }
+      // { aboutMe: { $regex: q, $options: 'i' } }
+    ]
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+    if (queryParams.isBanned) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          isBanned: JSON.parse(queryParams.isBanned)
+        }
+      }
+    }
+    // if (queryParams.isProfileVerified) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       isProfileVerified: JSON.parse(queryParams.isProfileVerified)
+    //     }
+    //   }
+    // }
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        ispendingApproval: true
+      }
+    }
+    // if (skills) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       $or: [{ 'skills.name': { $in: skills } },
+    //         { 'skills.path': { $in: skills.map(s => { return new RegExp(`,${s},`) }) } }]
+    //     }
+    //   }
+    // }
+    // if (userType) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       role: userType._id
+
+    //     }
+    //   }
+    // }
+
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isSeller: true
+
       }
     }
 
@@ -335,7 +585,8 @@ exports.getAllSeller = async(queryParams) =>{
 }
 exports.sellerApproved = async(seller_id) =>{
   let seller = await userModel.findById(seller_id);
-  seller.isEmailVerified = true;
+  seller.isProfileVerified = true;
+  seller.ispendingApproval = false;
   seller.save();
   const templateAdminHbs = 'seller-approved.hbs'
   if (seller.email) {
@@ -346,11 +597,34 @@ exports.sellerApproved = async(seller_id) =>{
 
 exports.sellerDisapproved = async(seller_id) =>{
   let seller = await userModel.findById(seller_id);
-  seller.isEmailVerified = false;
+  seller.isProfileVerified = false;
+  seller.ispendingApproval = false;
   seller.save();
   const templateAdminHbs = 'seller-disapproved.hbs'
   if (seller.email) {
         sendEmail(seller.email,{fullName: seller.firstName + " " + seller.lastName},`Rejected as Seller`, templateAdminHbs)
   };
+  return seller;
+}
+
+exports.buyerApproved = async(seller_id) =>{
+  let seller = await userModel.findById(seller_id);
+  seller.isEmailVerified = true;
+  seller.save();
+  // const templateAdminHbs = 'seller-approved.hbs'
+  // if (seller.email) {
+  //       sendEmail(seller.email,{fullName: seller.firstName + " " + seller.lastName},`Approved as Seller`, templateAdminHbs)
+  // };
+  return seller;
+}
+
+exports.buyerDisapproved = async(seller_id) =>{
+  let seller = await userModel.findById(seller_id);
+  seller.isEmailVerified = false;
+  seller.save();
+  // const templateAdminHbs = 'seller-disapproved.hbs'
+  // if (seller.email) {
+  //       sendEmail(seller.email,{fullName: seller.firstName + " " + seller.lastName},`Rejected as Seller`, templateAdminHbs)
+  // };
   return seller;
 }

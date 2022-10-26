@@ -16,10 +16,9 @@ exports.validCategorySchema = (data) => {
 exports.validProductSchema = (data) =>{
   return Joi.object({
     name: Joi.string().required(),
-    price: Joi.string().required().min(2),
+    price: Joi.string(),
     expiryDate : Joi.date(),
     notes : Joi.string(),
-    userId: Joi.string(),
     categoryId: Joi.string(),
   }).validate(data)
 }
@@ -41,10 +40,6 @@ exports.validUserSchemaPost = (user) => {
     email: Joi.string().required(),
     password: Joi.string().required().min(6),
     authType: Joi.string(),
-    // userType: Joi.string().valid(CLIENT, FREELANCER).required(),
-    // skills: Joi.alternatives().conditional('userType', { is: FREELANCER, then: Joi.array(), otherwise: Joi.valid('undefined') }),
-    // resume: Joi.alternatives().conditional('userType', { is: FREELANCER, then: Joi.string(), otherwise: Joi.valid('undefined') }),
-    // portfolio: Joi.alternatives().conditional('userType', { is: FREELANCER, then: Joi.array(), otherwise: Joi.valid('undefined') }),
     phone: Joi.string(),
     country: Joi.string(),
     address: Joi.string(),
@@ -53,28 +48,38 @@ exports.validUserSchemaPost = (user) => {
     profileImage: Joi.string(),
     isProfileVerified: Joi.boolean(),
     signUpCompleted: Joi.boolean(),
-    isBanned: Joi.boolean()
+    isBanned: Joi.boolean(),
+    isSeller: Joi.boolean(),
+    isBuyer: Joi.boolean(),
+    selectedProfile: Joi.string(),
+    city: Joi.string()
   }).validate(user)
 }
 exports.validUserSchemaPut = (user) => {
   return Joi.object({
-    fullName: Joi.string(),
+    firstName: Joi.string(),
+    lastName: Joi.string(),
+    username: Joi.string(),
+    pharmacyName: Joi.string(),
+    region: Joi.string(),
+    businessId: Joi.string(),
     dob: Joi.date(),
-    email: Joi.string(),
-    password: Joi.string().min(6),
-    userType: Joi.string(),
-    skills: Joi.alternatives().conditional('userType', { is: FREELANCER, then: Joi.array().min(1), otherwise: Joi.valid('undefined') }),
-    resume: Joi.alternatives().conditional('userType', { is: FREELANCER, then: Joi.string(), otherwise: Joi.valid('undefined') }),
-    portfolio: Joi.alternatives().conditional('userType', { is: FREELANCER, then: Joi.array(), otherwise: Joi.valid('undefined') }),
+    email: Joi.string().required(),
+    password: Joi.string().required().min(6),
+    authType: Joi.string(),
     phone: Joi.string(),
     country: Joi.string(),
     address: Joi.string(),
     heardFrom: Joi.string(),
     isEmailVerified: Joi.boolean(),
+    profileImage: Joi.string(),
     isProfileVerified: Joi.boolean(),
     signUpCompleted: Joi.boolean(),
     isBanned: Joi.boolean(),
-    rating: Joi.number()
+    isSeller: Joi.boolean(),
+    isBuyer: Joi.boolean(),
+    selectedProfile: Joi.string(),
+    city: Joi.string(),
   }).validate(user)
 }
 exports.validAdminSchema = (data) => {

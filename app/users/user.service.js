@@ -25,20 +25,22 @@ exports.userLogin = async (body) => {
       throw ErrorHandler('password is required', BAD_REQUEST)
     }
     const q = body.email ? { email: body.email } : { phone: body.phone }
-    const user = await User.findOne(q).populate('role').lean()
+    const user = await User.findOne(q).lean()
 
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No associated user found.', BAD_REQUEST)
     }
     if (user.isBanned) {
-      throw ErrorHandler('account suspended contact Adminstrator', FORBIDDEN)
+      throw ErrorHandler('Account suspended contact adminstrator.', FORBIDDEN)
     }
-
-    if(user && user.role.title === SELLER){
-      if(!user.isEmailVerified){
+    let role = 'Seller';
+    if(user && user.isSeller){
+      role = 'Seller';
+      if(!user.isProfileVerified){
         throw ErrorHandler('Please wait admin approval pending.', BAD_REQUEST)
       }
     }else{
+      role = 'Buyer';
       if(!user.isEmailVerified){
         throw ErrorHandler('Please verify your email.', BAD_REQUEST)
       }
@@ -50,13 +52,13 @@ exports.userLogin = async (body) => {
       validPass = await bcrypt.compare(body.password, user.password)
     }
     if (!validPass) {
-      throw ErrorHandler('incorrect password', BAD_REQUEST)
+      throw ErrorHandler('Wrong password or email.', BAD_REQUEST)
     }
     const accessToken = jwt.sign({
       id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role.title,
+      role: role,
       email: user.email,
       
     }, process.env.SECRET_JWT)
@@ -69,7 +71,7 @@ exports.userLogin = async (body) => {
 }
 exports.userSignUp = async (body, files) => {
   try {
-    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}` })[0] : undefined
+    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') })[0] : undefined
     const { error } = validUserSchemaPost(body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -81,12 +83,23 @@ exports.userSignUp = async (body, files) => {
     if (body.phone) {
       q.$or[1] = { phone: body.phone }
     }
-    const user = await User.findOne(q).populate('role')
+    const user = await User.findOne(q)
     if (user) {
       throw ErrorHandler('email or phone already exist', BAD_REQUEST)
     }
-    const roleBuyer = await Roles.findOne({ title: BUYER });
-    body.role= roleBuyer._id;
+    // const roleBuyer = await Roles.findOne({ title: BUYER });
+    // body.role= roleBuyer._id;
+    let role = 'Seller';
+    if(body.isSeller){
+      if(!body.username){
+        body.username = body.firstName +''+ body.lastName + parseInt(Math.random()*100000000)
+      }
+      body.ispendingApproval = true;
+      body.isSeller = true;
+    }else{
+      role = 'Buyer';
+      body.isBuyer = true;
+    }
     const newUser = new User(body)
     const salt = await bcrypt.genSalt(10)
     if (body.authType !== SOCIAL) {
@@ -98,84 +111,39 @@ exports.userSignUp = async (body, files) => {
       id: saved._id,
       firstName: saved.firstName,
       lastName: saved.lastName,
-      role: saved.role.title,
+      role: role,
       email: saved.email
     }, process.env.SECRET_JWT)
-    const templateHbs = 'registration-buyer.hbs'
-    if (newUser.email && newUser.email.length) {
-      sendEmail(newUser.email,
-        {
-          fullName: newUser.firstName + " " + newUser.lastName,
-          email: newUser.email,
-          verificationLink: `${process.env.SERVER_URL}user/verify-email/${saved._id}`
-        },
-        `Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
+    if(saved.isSeller){
+      const templateHbs = 'seller-registration.hbs'
+      if (newUser.email && newUser.email.length) {
+        sendEmail(newUser.email,{email: newUser.email ,fullName: newUser.firstName + " " + newUser.lastName},`Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
+      }
+      let adminRoleId = await Roles.findOne({title: ADMIN});
+      let allAdmins = await Admin.find({role: adminRoleId._id});
+      if(allAdmins.length >0){
+        const templateAdminHbs = 'admin-approval-neede.hbs'
+        await allAdmins.forEach(element => {
+          if (element.email) {
+            sendEmail(element.email, {email: newUser.email, fullName: newUser.firstName + " " + newUser.lastName},`${newUser.firstName + " " + newUser.lastName} Seller Registered Need Admin Approval`, templateAdminHbs)
+          }
+        });
+      }
+    }else{
+      const templateHbs = 'registration-buyer.hbs'
+      if (newUser.email && newUser.email.length) {
+        sendEmail(newUser.email,
+          {
+            fullName: newUser.firstName + " " + newUser.lastName,
+            email: newUser.email,
+            verificationLink: `${process.env.SERVER_URL}user/verify-email/${saved._id}`
+          },
+          `Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
+      }
     }
     saved = JSON.parse(JSON.stringify(saved))
     delete saved.password
     return { accessToken: accessToken, user: saved }
-  } catch (error) {
-    deleteUnprocessedFiles(body)
-    throw error
-  }
-}
-
-exports.sellerSignUp = async (body, files) => {
-  try {
-    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}` })[0] : undefined
-    const { error } = validUserSchemaPost(body)
-    if (error) {
-      throw ErrorHandler(error.message, BAD_REQUEST)
-    }
-    if ((!body.email || body.email.trim().length === 0)) {
-      throw ErrorHandler('email is required', BAD_REQUEST)
-    }
-    const q = { $or: [{ email: body.email }] }
-    if (body.phone) {
-      q.$or[1] = { phone: body.phone }
-    }
-    const user = await User.findOne(q).populate('role')
-    if (user) {
-      throw ErrorHandler('email or phone already exist', BAD_REQUEST)
-    }
-  
-    const roleSeller = await Roles.findOne({ title: SELLER })
-    body.authType = 'platform';
-    body.isEmailVerified = false; 
-    body.isPhoneVerified = true; 
-    body.signUpCompleted= true; 
-    body.role= roleSeller._id;
-    const newUser = new User(body)
-    const salt = await bcrypt.genSalt(10)
-    if (body.authType !== SOCIAL) {
-      // save parword's hash if not social sign up else save password as it is
-      newUser.password = await bcrypt.hash(newUser.password, salt)
-    }
-    let saved = await newUser.save()
-    const accessToken = jwt.sign({
-      id: saved._id,
-      firstName: saved.firstName,
-      lastName: saved.lastName,
-      role: saved.role.title,
-      email: saved.email
-    }, process.env.SECRET_JWT)
-    const templateHbs = 'seller-registration.hbs'
-    if (newUser.email && newUser.email.length) {
-      sendEmail(newUser.email,{email: newUser.email ,fullName: newUser.firstName + " " + newUser.lastName},`Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
-    }
-    let adminRoleId = await Roles.findOne({title: ADMIN});
-    let allAdmins = await Admin.find({role: adminRoleId._id});
-    if(allAdmins.length >0){
-      const templateAdminHbs = 'admin-approval-neede.hbs'
-      await allAdmins.forEach(element => {
-        if (element.email) {
-          sendEmail(element.email, {email: newUser.email, fullName: newUser.firstName + " " + newUser.lastName},`${newUser.firstName + " " + newUser.lastName} Seller Registered Need Admin Approval`, templateAdminHbs)
-        }
-      });
-    }
-    saved = JSON.parse(JSON.stringify(saved))
-    delete saved.password
-    return {user: saved}
   } catch (error) {
     deleteUnprocessedFiles(body)
     throw error
@@ -233,19 +201,16 @@ exports.verifyOTP = async (currentUser, otp) => {
 exports.updateUser = async (req, id) => {
   try {
     console.log(id);
-    let user = await User.findById(id).populate('role')
+    let user = await User.findById(id)
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
     // adding userType to body for conditional validation
-    req.body.role = user.role.title
     const { files } = req
     if (files && files.profileImage) {
-      req.body.profileImage = files && files.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}` })[0] : undefined
+      req.body.profileImage = files && files.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') })[0] : undefined
     }
-
     // removing userType to since it cannot be updated
-    delete req.body.role
 
     if (req.body.password) {
       if (user.authType === SOCIAL) {
@@ -711,7 +676,8 @@ exports.isUser = async (req, res, next) => {
         return res.status(UN_AUTHORIZED).send({ message: 'invalid auth token found' })
       }
       if (payload.role === BUYER ||
-        payload.role === SELLER
+        payload.role === SELLER ||
+        payload.isAdmin
       ) {
         req.user = payload
         next()
@@ -745,5 +711,50 @@ exports.isAdminOrUser = async (req, res, next) => {
 const deleteUnprocessedFiles = async (body) => {
   if (body.profileImage && body.profileImage.length) {
     await unlinkAsync(body.profileImage.split(process.env.BK_SERVER_URL)[1])
+  }
+}
+
+
+exports.becomeASeller = async (id) => {
+  try {
+    let saved = await User.findById(id)
+    if (!saved) {
+      throw ErrorHandler('no associated user found', BAD_REQUEST)
+    }
+    saved.isSeller = true;
+    await saved.save()
+    saved = JSON.parse(JSON.stringify(saved))
+
+    if(saved.isSeller){
+      const templateHbs = 'seller-registration.hbs'
+      if (saved.email && saved.email.length) {
+        sendEmail(saved.email,{email: saved.email ,fullName: saved.firstName + " " + saved.lastName},`Welcome on board ${saved.firstName + " " + saved.lastName}`, templateHbs)
+      }
+      let adminRoleId = await Roles.findOne({title: ADMIN});
+      let allAdmins = await Admin.find({role: adminRoleId._id});
+      if(allAdmins.length >0){
+        const templateAdminHbs = 'admin-approval-neede.hbs'
+        await allAdmins.forEach(element => {
+          if (element.email) {
+            sendEmail(element.email, {email: newUser.email, fullName: newUser.firstName + " " + newUser.lastName},`${newUser.firstName + " " + newUser.lastName} Seller Registered Need Admin Approval`, templateAdminHbs)
+          }
+        });
+      }
+    }else{
+      const templateHbs = 'registration-buyer.hbs'
+      if (newUser.email && newUser.email.length) {
+        sendEmail(newUser.email,
+          {
+            fullName: newUser.firstName + " " + newUser.lastName,
+            email: newUser.email,
+            verificationLink: `${process.env.SERVER_URL}user/verify-email/${saved._id}`
+          },
+          `Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
+      }
+    }
+    delete saved.password
+    return saved;
+  } catch (error) {
+    throw error
   }
 }

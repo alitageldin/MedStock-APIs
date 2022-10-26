@@ -9,21 +9,14 @@ const Product = mongoose.Schema({
     type: Date
   },
   price: {
-    type: Number,
-    required: true
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'users',
-    required: true,
+    type: Number
   },
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'categories'
   },
   notes: {
-    type: String,
-    required: true
+    type: String
   }
 }, {
   timestamps: true

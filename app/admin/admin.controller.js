@@ -79,6 +79,26 @@ router.post('/get-all-seller', async(req, res) => {
   }
 })
 
+router.post('/get-all-buyers', async(req, res) => {
+  try {
+    const sellers = await adminService.getAllBuyer(req.query);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.post('/get-all-pending-approval-seller', async(req, res) => {
+  try {
+    const sellers = await adminService.getAllPendingApprovalSeller(req.query);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+
+
 router.post('/seller-approved', async(req, res) => {
   try {
     const sellers = await adminService.sellerApproved(req.body._id);
@@ -91,6 +111,24 @@ router.post('/seller-approved', async(req, res) => {
 router.post('/seller-disapproved', async(req, res) => {
   try {
     const sellers = await adminService.sellerDisapproved(req.body._id);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.post('/buyer-approved', async(req, res) => {
+  try {
+    const sellers = await adminService.buyerApproved(req.body._id);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.post('/buyer-disapproved', async(req, res) => {
+  try {
+    const sellers = await adminService.buyerDisapproved(req.body._id);
     return res.status(SUCCESS).send(sellers)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })

@@ -2,19 +2,18 @@ const express = require('express')
 const multer = require('multer')
 const { INTERNAL_ERR, CREATED, SUCCESS } = require('../../helpers/HTTP.CODES')
 const router = express.Router()
-const productService = require('./product.service')
 
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/images/product-images')
+    cb(null, 'uploads/images/seller-product-images')
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '.' + file.originalname) // mime type gives ext of file
   }
 })
 
-const uploadFile = multer({ dest: 'uploads/images/product-images/', storage: storage })
+const uploadFile = multer({ dest: 'uploads/images/seller-product-images/', storage: storage })
 
 
 router.get('/', async (req, res) => {
@@ -53,12 +52,9 @@ router.post('/',uploadFile.fields([
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.put('/:id', uploadFile.fields([
-  { name: 'productImages', maxCount: 10 }
-]), async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
-    console.log(req.params.id, req.body);
-    const updated = await productService.update(req.params.id, req, req.files)
+    const updated = await productService.update(req.params.id, req.body)
     return res.status(CREATED).send(updated)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
