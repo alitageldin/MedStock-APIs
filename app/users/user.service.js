@@ -98,6 +98,7 @@ exports.userSignUp = async (body, files) => {
       body.isSeller = true;
     }else{
       role = 'Buyer';
+      body.isEmailVerified = true
       body.isBuyer = true;
     }
     const newUser = new User(body)
