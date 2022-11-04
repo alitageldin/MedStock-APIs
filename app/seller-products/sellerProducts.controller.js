@@ -2,6 +2,7 @@ const express = require('express')
 const multer = require('multer')
 const { INTERNAL_ERR, CREATED, SUCCESS } = require('../../helpers/HTTP.CODES')
 const router = express.Router()
+const productService = require('./sellerProducts.service')
 
 
 const storage = multer.diskStorage({
@@ -16,9 +17,9 @@ const storage = multer.diskStorage({
 const uploadFile = multer({ dest: 'uploads/images/seller-product-images/', storage: storage })
 
 
-router.get('/', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const products = await productService.getAll(req.query)
+    const products = await productService.getAll(req.params.id)
     return res.status(SUCCESS).send(products)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })

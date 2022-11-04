@@ -153,7 +153,7 @@ exports.userSignUp = async (body, files) => {
 
 exports.genrateOTP = async (currentUser, phone) => {
   try {
-    const user = await User.findById(currentUser.id).populate('role')
+    const user = await User.findById(currentUser.id)
     if (!user) {
       throw ErrorHandler('user not found', BAD_REQUEST)
     }
@@ -180,7 +180,7 @@ exports.genrateOTP = async (currentUser, phone) => {
 }
 exports.verifyOTP = async (currentUser, otp) => {
   try {
-    const user = await User.findById(currentUser.id).populate('role')
+    const user = await User.findById(currentUser.id)
     if (!user) {
       throw ErrorHandler('user not found', BAD_REQUEST)
     }
@@ -252,7 +252,7 @@ exports.updateUser = async (req, id) => {
 }
 exports.getMyProfile = async (id) => {
   try {
-    const user = await User.findById(id).populate('role').lean()
+    const user = await User.findById(id).lean()
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -265,7 +265,7 @@ exports.getMyProfile = async (id) => {
 }
 exports.adminUpdatesUser = async (req, id) => {
   try {
-    const user = await User.findById(id).populate('role')
+    const user = await User.findById(id)
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -389,7 +389,7 @@ exports.getAll = async (queryParams) => {
 }
 exports.getById = async (id) => {
   try {
-    const user = await User.findById(id).populate('role').lean()
+    const user = await User.findById(id).lean()
     if (!user) {
       throw ErrorHandler('user not found', NOT_FOUND)
     }
@@ -400,7 +400,7 @@ exports.getById = async (id) => {
 }
 exports.deleteUser = async (id) => {
   try {
-    const user = await User.findById(id).populate('role').lean()
+    const user = await User.findById(id).lean()
     if (!user) {
       throw ErrorHandler('user not found', NOT_FOUND)
     }
@@ -412,7 +412,7 @@ exports.deleteUser = async (id) => {
 }
 exports.deleteFile = async (userId, { attachmentType, address }) => {
   try {
-    const dbUserInstance = await User.findById(userId).populate('role')
+    const dbUserInstance = await User.findById(userId)
     if (!dbUserInstance) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -445,7 +445,7 @@ exports.verifyEmail = async (id) => {
     if (!id) {
       throw ErrorHandler('id required in params', BAD_REQUEST)
     }
-    const user = await User.findById(id).populate('role')
+    const user = await User.findById(id)
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -589,7 +589,7 @@ exports.reSendVerificationEmail = async (email) => {
     if (!email) {
       throw ErrorHandler('email is required', BAD_REQUEST)
     }
-    const user = await User.findOne({ email: email }).populate('role')
+    const user = await User.findOne({ email: email })
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -611,7 +611,7 @@ exports.forgetPassword = async (body) => {
     if (!body.email) {
       throw ErrorHandler('email is required', BAD_REQUEST)
     }
-    const user = await User.findOne({ email: body.email }).populate('role')
+    const user = await User.findOne({ email: body.email })
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -643,7 +643,7 @@ exports.changePassword = async (body) => {
     if (!payload.id) {
       throw ErrorHandler('id not found', BAD_REQUEST)
     }
-    const user = await User.findById(payload.id).populate('role')
+    const user = await User.findById(payload.id)
     if (!user) {
       throw ErrorHandler('no associated user found', BAD_REQUEST)
     }
@@ -737,20 +737,39 @@ exports.becomeASeller = async (id) => {
         const templateAdminHbs = 'admin-approval-neede.hbs'
         await allAdmins.forEach(element => {
           if (element.email) {
-            sendEmail(element.email, {email: newUser.email, fullName: newUser.firstName + " " + newUser.lastName},`${newUser.firstName + " " + newUser.lastName} Seller Registered Need Admin Approval`, templateAdminHbs)
+            sendEmail(element.email, {email: saved.email, fullName: saved.firstName + " " + saved.lastName},`${saved.firstName + " " + saved.lastName} Seller Registered Need Admin Approval`, templateAdminHbs)
           }
         });
       }
-    }else{
+    }
+    delete saved.password
+    return saved;
+  } catch (error) {
+    throw error
+  }
+}
+
+
+exports.becomeABuyer = async (id) => {
+  try {
+    let saved = await User.findById(id)
+    if (!saved) {
+      throw ErrorHandler('no associated user found', BAD_REQUEST)
+    }
+    saved.isBuyer = true;
+    await saved.save()
+    saved = JSON.parse(JSON.stringify(saved))
+
+    if(saved.isBuyer){
       const templateHbs = 'registration-buyer.hbs'
-      if (newUser.email && newUser.email.length) {
-        sendEmail(newUser.email,
+      if (saved.email && saved.email.length) {
+        sendEmail(saved.email,
           {
-            fullName: newUser.firstName + " " + newUser.lastName,
-            email: newUser.email,
+            fullName: saved.firstName + " " + saved.lastName,
+            email: saved.email,
             verificationLink: `${process.env.SERVER_URL}user/verify-email/${saved._id}`
           },
-          `Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
+          `Welcome on board ${saved.firstName + " " + saved.lastName}`, templateHbs)
       }
     }
     delete saved.password

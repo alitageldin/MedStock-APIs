@@ -1,10 +1,6 @@
 const mongoose = require('mongoose')
 
 const SellerProducts = mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
   expiryDate: {
     type: Date
   },
@@ -27,8 +23,7 @@ const SellerProducts = mongoose.Schema({
     ref: 'categories'
   },
   notes: {
-    type: String,
-    required: true
+    type: String
   }
 }, {
   timestamps: true

@@ -5,7 +5,7 @@ const adminAuthController = require('./admin/admin.controller')
 const userController = require('./users/user.controller')
 const productController = require('./products/product.controller')
 const categoryController = require('./categories/category.controller')
-
+const sellerController = require('./seller-products/sellerProducts.controller')
 const { isAdmin } = require('./admin/admin.service')
 const { isUser } = require('./users/user.service')
 
@@ -24,6 +24,7 @@ router.use('/role', isAdmin, roleController)
 router.use('/admin', adminAuthController)
 router.use('/user', userController)
 router.use('/product',isUser || isAdmin, productController)
+router.use('/sellerProduct',isUser || isAdmin, sellerController)
 router.use('/category',isUser || isAdmin, categoryController)
 
 router.post('/upload-file', isUser, upload.single('file'), (req, res) => {

@@ -78,6 +78,135 @@ exports.getAll = async (queryParams) => {
   }
 }
 
+exports.searchProduct1 = async (body) => {
+  try {
+    const query = [{ name: { $regex: body.productName, $options: 'i' } }]
+
+
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+
+    let products = await Product.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'productimages',
+                localField: '_id',
+                foreignField: 'productId',
+                as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'categoryId',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+    products = JSON.parse(JSON.stringify(products))
+
+    // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
+    // try{
+    //   await products.forEach(elem => {
+    //     console.log(elem._id.toString());
+    //     let productImages = ProductImage.find({'productId': elem._id.toString()});
+    //     elem['productImages'] = productImages;
+    //     console.log(productImages);
+    //   })
+    // }
+    // catch (error) {
+    //   throw error
+    // }
+   
+    return products
+  } catch (error) {
+    throw error
+  }
+}
+
+
+exports.searchProduct = async (body) => {
+  try {
+    // const query = [{ name: { $regex: body.productName, $options: 'i' } }]
+    let products = await Product.find({ name: { $regex: body.productName, $options: 'i' }, categoryId: body.categoryId })
+
+    // const pipline = [
+    //   {
+    //     $match: {
+    //       $or: query
+    //     }
+    //   }
+    // ]
+    // const matchIndex = pipline.findIndex(aq => aq.$match)
+
+    // let products = await Product.aggregate([
+    //   {
+    //     $facet: {
+    //       results: [
+    //         {
+    //           $lookup: {
+    //             from: 'productimages',
+    //             localField: '_id',
+    //             foreignField: 'productId',
+    //             as: 'productImages'
+    //           }
+    //         },
+    //         {
+    //           $lookup: {
+    //             from: 'categories',
+    //             localField: 'categoryId',
+    //             foreignField: '_id',
+    //             as: 'category'
+    //           }
+    //         },
+    //         ...pipline
+    //       ],
+    //       count: [
+    //         { $match: { ...pipline[matchIndex].$match } },
+    //         { $count: 'totalCount' }]
+    //     }
+    //   }
+    // ])
+    products = JSON.parse(JSON.stringify(products))
+
+    // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
+    // try{
+    //   await products.forEach(elem => {
+    //     console.log(elem._id.toString());
+    //     let productImages = ProductImage.find({'productId': elem._id.toString()});
+    //     elem['productImages'] = productImages;
+    //     console.log(productImages);
+    //   })
+    // }
+    // catch (error) {
+    //   throw error
+    // }
+   
+    return products
+  } catch (error) {
+    throw error
+  }
+}
+
+
+
 exports.getSellerProducts = async (queryParams) => {
   try {
     const { sortBy } = queryParams

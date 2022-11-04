@@ -2,53 +2,68 @@
 const { ErrorHandler } = require('../../helpers/ErrorHandler')
 const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
 const Product = require('./sellerProducts.model')
-const { validProductSchema } = require('../../helpers/validation.schema')
+const { validSellerProductSchema } = require('../../helpers/validation.schema')
 const ProductImage = require('./sellerProductImages.model')
 const { default: mongoose } = require('mongoose')
 
-exports.getAll = async (queryParams) => {
+exports.getAll = async (id) => {
   try {
-    const { sortBy } = queryParams
-    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
-    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
-    const q = queryParams.q ? queryParams.q : ''
-    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
-    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    const query = [{ name: { $regex: q, $options: 'i' } }]
+    // const { sortBy } = queryParams
+    // const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    // const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+    // const q = queryParams.q ? queryParams.q : ''
+    // const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+    // const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+    // const query = [{ name: { $regex: q, $options: 'i' }, userId: userId  }]
 
+    // console.log(query);
 
-    const pipline = [
-      {
-        $match: {
-          $or: query
-        }
-      },
-      { $skip: skip },
-      { $limit: pageSize },
-      { $sort: { [sortBy]: order } }
-    ]
-    const matchIndex = pipline.findIndex(aq => aq.$match)
-
-    let products = await Product.aggregate([
-      {
-        $facet: {
-          results: [
-            {
-              $lookup: {
-                from: 'sellerProductImages',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'productImages'
-              }
-            },
-            ...pipline
-          ],
-          count: [
-            { $match: { ...pipline[matchIndex].$match } },
-            { $count: 'totalCount' }]
-        }
-      }
-    ])
+    // const pipline = [
+    //   {
+    //     $match: {
+    //       $or: query
+    //     }
+    //   }
+    // ]
+    // const matchIndex = pipline.findIndex(aq => aq.$match)
+    let products = await Product.find({ userId: id  });
+    // console.log(products)
+    // let productss = await Product.aggregate([
+    //   {
+    //     $facet: {
+    //       results: [
+            // {
+            //   $lookup: {
+            //     from: 'sellerproductimages',
+            //     localField: '_id',
+            //     foreignField: 'sellerProductId',
+            //     as: 'productImages'
+            //   }
+            // },
+            // {
+            //   $lookup: {
+            //     from: 'products',
+            //     localField: 'productId',
+            //     foreignField: '_id',
+            //     as: 'product'
+            //   }
+            // },
+            // {
+            //   $lookup: {
+            //     from: 'categories',
+            //     localField: 'categoryId',
+            //     foreignField: '_id',
+            //     as: 'category'
+            //   }
+            // },
+    //         ...pipline
+    //       ],
+    //       count: [
+    //         { $match: { ...pipline[matchIndex].$match } },
+    //         { $count: 'totalCount' }]
+    //     }
+    //   }
+    // ])
     products = JSON.parse(JSON.stringify(products))
 
     // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
@@ -66,7 +81,7 @@ exports.getAll = async (queryParams) => {
    
     return products
   } catch (error) {
-    throw error
+    return []
   }
 }
 
@@ -114,6 +129,22 @@ exports.getSellerProducts = async (queryParams) => {
                 as: 'productImages'
               }
             },
+            {
+              $lookup: {
+                from: 'products',
+                localField: '_id',
+                foreignField: 'productId',
+                as: 'product'
+              }
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'categoryId',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
             ...pipline
           ],
           count: [
@@ -155,8 +186,8 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
-    const { error } = validProductSchema(data)
+    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
+    const { error } = validSellerProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
     }
@@ -166,7 +197,7 @@ exports.create = async (data, files) => {
     await productImages.forEach(elem => {
       let productImage = new ProductImage();
       productImage.path = elem;
-      productImage.productId = product._id;
+      productImage.sellerProductId = product._id;
       productImage.save();
     })
     return product;
@@ -176,7 +207,7 @@ exports.create = async (data, files) => {
 }
 exports.update = async (id, data) => {
   try {
-    const { error } = validProductSchema(data)
+    const { error } = validSellerProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
     }
@@ -184,8 +215,11 @@ exports.update = async (id, data) => {
     if (!product) {
       throw ErrorHandler('No product found', NOT_FOUND)
     }
-    product.title = data.title
-    product.description = data.description
+    product.price = data.price
+    product.expiryDate = data.expiryDate
+    product.productId = data.productId 
+    product.categoryId = data.categoryId
+    product.notes = data.notes
     await product.save()
   } catch (error) {
     throw error

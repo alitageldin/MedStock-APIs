@@ -18,7 +18,9 @@ const {
   verifyOTP,
   adminUpdatesUser,
   getMyProfile,
-  getTopClients
+  getTopClients,
+  becomeASeller,
+  becomeABuyer
 } = require('./user.service')
 const router = express.Router()
 const multer = require('multer')
@@ -209,6 +211,15 @@ router.put('/:id', isAdmin, async (req, res) => {
 router.put('/becomeASeller/:id', isUser, async (req, res) => {
   try {
     const updatedUser = await becomeASeller(req.params.id)
+    return res.status(SUCCESS).send(updatedUser)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.put('/becomeABuyer/:id', isUser, async (req, res) => {
+  try {
+    const updatedUser = await becomeABuyer(req.params.id)
     return res.status(SUCCESS).send(updatedUser)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })

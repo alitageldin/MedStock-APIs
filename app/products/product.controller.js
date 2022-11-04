@@ -25,6 +25,14 @@ router.get('/', async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+router.post('/searchProduct', async (req, res) => {
+  try {
+    const products = await productService.searchProduct(req.body)
+    return res.status(SUCCESS).send(products)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
 
 
 router.get('/get-seller-products', async (req, res) => {

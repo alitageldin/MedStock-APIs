@@ -22,6 +22,16 @@ exports.validProductSchema = (data) =>{
     categoryId: Joi.string(),
   }).validate(data)
 }
+exports.validSellerProductSchema = (data) =>{
+  return Joi.object({
+    price: Joi.string(),
+    expiryDate : Joi.date(),
+    notes : Joi.string(),
+    categoryId: Joi.string(),
+    userId: Joi.string(),
+    productId: Joi.string(),
+  }).validate(data)
+}
 exports.validPermSchema = (data) => {
   return Joi.object({
     name: Joi.string().required().min(2),
