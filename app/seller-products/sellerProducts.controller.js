@@ -17,14 +17,14 @@ const storage = multer.diskStorage({
 const uploadFile = multer({ dest: 'uploads/images/seller-product-images/', storage: storage })
 
 
-router.get('/:id', async (req, res) => {
-  try {
-    const products = await productService.getAll(req.params.id)
-    return res.status(SUCCESS).send(products)
-  } catch (error) {
-    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
-  }
-})
+// router.get('/:id', async (req, res) => {
+//   try {
+//     const products = await productService.getAll(req.params.id)
+//     return res.status(SUCCESS).send(products)
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
 
 
 router.get('/get-seller-products', async (req, res) => {
@@ -35,14 +35,14 @@ router.get('/get-seller-products', async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.get('/:id', async (req, res) => {
-  try {
-    const product = await productService.getById(req.params.id)
-    return res.status(SUCCESS).send(product)
-  } catch (error) {
-    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
-  }
-})
+// router.get('/:id', async (req, res) => {
+//   try {
+//     const product = await productService.getById(req.params.id)
+//     return res.status(SUCCESS).send(product)
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
 router.post('/',uploadFile.fields([
   { name: 'productImages', maxCount: 10 }
 ]), async (req, res) => {
@@ -53,6 +53,7 @@ router.post('/',uploadFile.fields([
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
 router.put('/:id', async (req, res) => {
   try {
     const updated = await productService.update(req.params.id, req.body)

@@ -14,58 +14,57 @@ exports.getAll = async (id) => {
     // const q = queryParams.q ? queryParams.q : ''
     // const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
     // const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    // const query = [{ name: { $regex: q, $options: 'i' }, userId: userId  }]
+    const query = [{userId: id}]
 
     // console.log(query);
 
-    // const pipline = [
-    //   {
-    //     $match: {
-    //       $or: query
-    //     }
-    //   }
-    // ]
-    // const matchIndex = pipline.findIndex(aq => aq.$match)
-    let products = await Product.find({ userId: id  });
-    // console.log(products)
-    // let productss = await Product.aggregate([
-    //   {
-    //     $facet: {
-    //       results: [
-            // {
-            //   $lookup: {
-            //     from: 'sellerproductimages',
-            //     localField: '_id',
-            //     foreignField: 'sellerProductId',
-            //     as: 'productImages'
-            //   }
-            // },
-            // {
-            //   $lookup: {
-            //     from: 'products',
-            //     localField: 'productId',
-            //     foreignField: '_id',
-            //     as: 'product'
-            //   }
-            // },
-            // {
-            //   $lookup: {
-            //     from: 'categories',
-            //     localField: 'categoryId',
-            //     foreignField: '_id',
-            //     as: 'category'
-            //   }
-            // },
-    //         ...pipline
-    //       ],
-    //       count: [
-    //         { $match: { ...pipline[matchIndex].$match } },
-    //         { $count: 'totalCount' }]
-    //     }
-    //   }
-    // ])
-    products = JSON.parse(JSON.stringify(products))
-
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+    // let products = await Product.find({ userId: id  }).populate('productId').populate('categoryId');
+    console.log(products)
+    let products = await Product.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'sellerproductimages',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'products',
+                localField: 'productId',
+                foreignField: '_id',
+                as: 'product'
+              }
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'categoryId',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+  
     // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
     // try{
     //   await products.forEach(elem => {
@@ -81,7 +80,7 @@ exports.getAll = async (id) => {
    
     return products
   } catch (error) {
-    return []
+    return error
   }
 }
 
@@ -90,12 +89,11 @@ exports.getSellerProducts = async (queryParams) => {
     const { sortBy } = queryParams
     const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
     const id = queryParams.id ? queryParams.id : ''
-    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 100
     const q = queryParams.q ? queryParams.q : ''
     const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    const query = [{ name: { $regex: q, $options: 'i' } }]
-
+    const query = [{}]
 
     const pipline = [
       {
@@ -103,13 +101,13 @@ exports.getSellerProducts = async (queryParams) => {
           $or: query
         }
       },
-      { $skip: skip },
-      { $limit: pageSize },
-      { $sort: { [sortBy]: order } }
+      // { $skip: skip },
+      // { $limit: pageSize },
+      // { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
+    
     if (id) {
-      console.log(id);
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
@@ -123,7 +121,7 @@ exports.getSellerProducts = async (queryParams) => {
           results: [
             {
               $lookup: {
-                from: 'sellerProductImages',
+                from: 'sellerproductImages',
                 localField: '_id',
                 foreignField: 'sellerProductId',
                 as: 'productImages'
@@ -132,8 +130,8 @@ exports.getSellerProducts = async (queryParams) => {
             {
               $lookup: {
                 from: 'products',
-                localField: '_id',
-                foreignField: 'productId',
+                localField: 'productId',
+                foreignField: '_id',
                 as: 'product'
               }
             },
@@ -170,6 +168,7 @@ exports.getSellerProducts = async (queryParams) => {
    
     return products
   } catch (error) {
+    console.log(error);
     throw error
   }
 }
