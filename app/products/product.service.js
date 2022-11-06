@@ -144,46 +144,54 @@ exports.searchProduct1 = async (body) => {
 
 exports.searchProduct = async (body) => {
   try {
-    // const query = [{ name: { $regex: body.productName, $options: 'i' } }]
-    let products = await Product.find({ name: { $regex: body.productName, $options: 'i' }, categoryId: body.categoryId })
+    const query = [{ name: { $regex: body.productName, $options: 'i' } }]
+    // let products = await Product.find({ name: { $regex: body.productName, $options: 'i' }, categoryId: body.categoryId })
 
-    // const pipline = [
-    //   {
-    //     $match: {
-    //       $or: query
-    //     }
-    //   }
-    // ]
-    // const matchIndex = pipline.findIndex(aq => aq.$match)
-
-    // let products = await Product.aggregate([
-    //   {
-    //     $facet: {
-    //       results: [
-    //         {
-    //           $lookup: {
-    //             from: 'productimages',
-    //             localField: '_id',
-    //             foreignField: 'productId',
-    //             as: 'productImages'
-    //           }
-    //         },
-    //         {
-    //           $lookup: {
-    //             from: 'categories',
-    //             localField: 'categoryId',
-    //             foreignField: '_id',
-    //             as: 'category'
-    //           }
-    //         },
-    //         ...pipline
-    //       ],
-    //       count: [
-    //         { $match: { ...pipline[matchIndex].$match } },
-    //         { $count: 'totalCount' }]
-    //     }
-    //   }
-    // ])
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+    if (body.categoryId) {
+      console.log(body.categoryId);
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          categoryId: mongoose.Types.ObjectId(body.categoryId) 
+        }
+      }
+    }
+    let products = await Product.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'productimages',
+                localField: '_id',
+                foreignField: 'productId',
+                as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'categoryId',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
     products = JSON.parse(JSON.stringify(products))
 
     // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
@@ -199,7 +207,7 @@ exports.searchProduct = async (body) => {
     //   throw error
     // }
    
-    return products
+    return products[0].results;
   } catch (error) {
     throw error
   }

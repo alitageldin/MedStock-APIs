@@ -101,9 +101,9 @@ exports.getSellerProducts = async (queryParams) => {
           $or: query
         }
       },
-      // { $skip: skip },
-      // { $limit: pageSize },
-      // { $sort: { [sortBy]: order } }
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
     
@@ -121,7 +121,7 @@ exports.getSellerProducts = async (queryParams) => {
           results: [
             {
               $lookup: {
-                from: 'sellerproductImages',
+                from: 'sellerproductimages',
                 localField: '_id',
                 foreignField: 'sellerProductId',
                 as: 'productImages'
@@ -166,7 +166,7 @@ exports.getSellerProducts = async (queryParams) => {
     //   throw error
     // }
    
-    return products
+    return products[0].results;
   } catch (error) {
     console.log(error);
     throw error
