@@ -5,6 +5,12 @@ const Product = mongoose.Schema({
     type: String,
     required: true
   },
+  sku: {
+    type: String
+  },
+  imageUrl: {
+    type: String
+  },
   expiryDate: {
     type: Date
   },
@@ -15,7 +21,7 @@ const Product = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'categories'
   },
-  notes: {
+  description: {
     type: String
   }
 }, {

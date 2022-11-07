@@ -35,14 +35,6 @@ exports.getAll = async (queryParams) => {
           results: [
             {
               $lookup: {
-                from: 'productimages',
-                localField: '_id',
-                foreignField: 'productId',
-                as: 'productImages'
-              }
-            },
-            {
-              $lookup: {
                 from: 'categories',
                 localField: 'categoryId',
                 foreignField: '_id',
@@ -96,14 +88,14 @@ exports.searchProduct1 = async (body) => {
       {
         $facet: {
           results: [
-            {
-              $lookup: {
-                from: 'productimages',
-                localField: '_id',
-                foreignField: 'productId',
-                as: 'productImages'
-              }
-            },
+            // {
+            //   $lookup: {
+            //     from: 'productimages',
+            //     localField: '_id',
+            //     foreignField: 'productId',
+            //     as: 'productImages'
+            //   }
+            // },
             {
               $lookup: {
                 from: 'categories',
@@ -168,14 +160,14 @@ exports.searchProduct = async (body) => {
       {
         $facet: {
           results: [
-            {
-              $lookup: {
-                from: 'productimages',
-                localField: '_id',
-                foreignField: 'productId',
-                as: 'productImages'
-              }
-            },
+            // {
+            //   $lookup: {
+            //     from: 'productimages',
+            //     localField: '_id',
+            //     foreignField: 'productId',
+            //     as: 'productImages'
+            //   }
+            // },
             {
               $lookup: {
                 from: 'categories',
@@ -251,14 +243,14 @@ exports.getSellerProducts = async (queryParams) => {
       {
         $facet: {
           results: [
-            {
-              $lookup: {
-                from: 'productimages',
-                localField: '_id',
-                foreignField: 'productId',
-                as: 'productImages'
-              }
-            },
+            // {
+            //   $lookup: {
+            //     from: 'productimages',
+            //     localField: '_id',
+            //     foreignField: 'productId',
+            //     as: 'productImages'
+            //   }
+            // },
             ...pipline
           ],
           count: [
@@ -300,21 +292,22 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
+    // const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
+    data.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') })[0] : undefined
     const { error } = validProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
     }
     const product = new Product(data)
     await product.save()
-    if(productImages && productImages.length > 0){
-      await productImages.forEach(elem => {
-        let productImage = new ProductImage();
-        productImage.path = elem;
-        productImage.productId = product._id;
-        productImage.save();
-      })
-    }
+    // if(productImages && productImages.length > 0){
+    //   await productImages.forEach(elem => {
+    //     let productImage = new ProductImage();
+    //     productImage.path = elem;
+    //     productImage.productId = product._id;
+    //     productImage.save();
+    //   })
+    // }
    
     return product;
   } catch (error) {
@@ -323,7 +316,8 @@ exports.create = async (data, files) => {
 }
 exports.update = async (id, req, files) => {
   try {
-    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
+    // const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
+    req.body.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') })[0] : undefined
     console.log(req.body);
     const { error } = validProductSchema(req.body)
     if (error) {
@@ -337,27 +331,29 @@ exports.update = async (id, req, files) => {
     product.price = req.body.price ? req.body.price :product.price
     product.expiryDate = req.body.expiryDate ? req.body.expiryDate :  product.expiryDate
     product.categoryId = req.body.categoryId ? req.body.categoryId : product.categoryId
+    product.sku = req.body.sku ? req.body.sku : product.sku
+    product.description = req.body.description ? req.body.description : product.description
 
     await product.save()
-    if(productImages && productImages.length > 0){
-      let productImage = await ProductImage.findOne({'productId': product._id});
-      if(productImage){
-        productImage.path = productImages[0].path;
-        productImage.productId = product._id;
-        productImage.save();
-      }else{
-        console.log(productImages)
-        if(productImages){
-          await productImages.forEach(elem => {
-            let productImage = new ProductImage();
-            productImage.path = elem;
-            productImage.productId = product._id;
-            productImage.save();
-          })
-        }
+    // if(productImages && productImages.length > 0){
+    //   let productImage = await ProductImage.findOne({'productId': product._id});
+    //   if(productImage){
+    //     productImage.path = productImages[0].path;
+    //     productImage.productId = product._id;
+    //     productImage.save();
+    //   }else{
+    //     console.log(productImages)
+    //     if(productImages){
+    //       await productImages.forEach(elem => {
+    //         let productImage = new ProductImage();
+    //         productImage.path = elem;
+    //         productImage.productId = product._id;
+    //         productImage.save();
+    //       })
+    //     }
         
-      }
-    }
+    //   }
+    // }
     
   } catch (error) {
     throw error
