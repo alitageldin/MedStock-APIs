@@ -307,13 +307,15 @@ exports.create = async (data, files) => {
     }
     const product = new Product(data)
     await product.save()
-
-    await productImages.forEach(elem => {
-      let productImage = new ProductImage();
-      productImage.path = elem;
-      productImage.productId = product._id;
-      productImage.save();
-    })
+    if(productImages && productImages.length > 0){
+      await productImages.forEach(elem => {
+        let productImage = new ProductImage();
+        productImage.path = elem;
+        productImage.productId = product._id;
+        productImage.save();
+      })
+    }
+   
     return product;
   } catch (error) {
     throw error

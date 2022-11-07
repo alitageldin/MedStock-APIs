@@ -1,12 +1,8 @@
 const mongoose = require('mongoose')
 
-const SellerProducts = mongoose.Schema({
-  expiryDate: {
-    type: Date
-  },
-  price: {
-    type: Number,
-    required: true
+const OrderDetails = mongoose.Schema({
+  ammount: {
+    type: Number
   },
   quantity: {
     type: Number
@@ -19,14 +15,20 @@ const SellerProducts = mongoose.Schema({
     ref: 'users',
     required: true,
   },
-  productId: {
+  orderId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'products',
+    ref: 'orders',
     required: true,
   },
-  categoryId: {
+  sellerProductId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'categories'
+    ref: 'sellerproducts',
+    required: true,
+  },
+  sellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users',
+    required: true,
   },
   notes: {
     type: String
@@ -35,4 +37,4 @@ const SellerProducts = mongoose.Schema({
   timestamps: true
 })
 
-module.exports = mongoose.model('sellerproducts', SellerProducts)
+module.exports = mongoose.model('orderdetails', OrderDetails)

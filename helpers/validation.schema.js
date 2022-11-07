@@ -25,6 +25,8 @@ exports.validProductSchema = (data) =>{
 exports.validSellerProductSchema = (data) =>{
   return Joi.object({
     price: Joi.string(),
+    discount: Joi.number(),
+    quantity: Joi.number(),
     expiryDate : Joi.date(),
     notes : Joi.string(),
     categoryId: Joi.string(),
@@ -32,6 +34,28 @@ exports.validSellerProductSchema = (data) =>{
     productId: Joi.string(),
   }).validate(data)
 }
+exports.validOrderSchema = (data) =>{
+  return Joi.object({
+    totalAmmount: Joi.number(),
+    discount: Joi.number(),
+    notes : Joi.string(),
+    userId: Joi.string(),
+  }).validate(data)
+}
+exports.validOrderDetailSchema = (data) =>{
+  return Joi.object({
+    amount: Joi.string(),
+    discount: Joi.number(),
+    quantity: Joi.number(),
+    notes : Joi.string(),
+    orderId: Joi.string(),
+    userId: Joi.string(),
+    sellerProductId: Joi.string(),
+    sellerId: Joi.string(),
+  }).validate(data)
+}
+
+
 exports.validPermSchema = (data) => {
   return Joi.object({
     name: Joi.string().required().min(2),

@@ -89,7 +89,7 @@ exports.getSellerProducts = async (queryParams) => {
     const { sortBy } = queryParams
     const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
     const id = queryParams.id ? queryParams.id : ''
-    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 100
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 1000
     const q = queryParams.q ? queryParams.q : ''
     const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
@@ -192,13 +192,14 @@ exports.create = async (data, files) => {
     }
     const product = new Product(data)
     await product.save()
-
-    await productImages.forEach(elem => {
-      let productImage = new ProductImage();
-      productImage.path = elem;
-      productImage.sellerProductId = product._id;
-      productImage.save();
-    })
+    if(productImages && productImages.length > 0){
+      await productImages.forEach(elem => {
+        let productImage = new ProductImage();
+        productImage.path = elem;
+        productImage.sellerProductId = product._id;
+        productImage.save();
+      })
+    }
     return product;
   } catch (error) {
     throw error
@@ -214,6 +215,8 @@ exports.update = async (id, data) => {
     if (!product) {
       throw ErrorHandler('No product found', NOT_FOUND)
     }
+    product.quantity = data.quantity
+    product.discount = data.discount
     product.price = data.price
     product.expiryDate = data.expiryDate
     product.productId = data.productId 
