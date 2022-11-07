@@ -333,7 +333,7 @@ exports.update = async (id, req, files) => {
     product.categoryId = req.body.categoryId ? req.body.categoryId : product.categoryId
     product.sku = req.body.sku ? req.body.sku : product.sku
     product.description = req.body.description ? req.body.description : product.description
-
+    product.imageUrl = req.body.imageUrl? req.body.imageUrl: product.imageUrl;
     await product.save()
     // if(productImages && productImages.length > 0){
     //   let productImage = await ProductImage.findOne({'productId': product._id});
