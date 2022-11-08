@@ -17,7 +17,6 @@ exports.validProductSchema = (data) =>{
   return Joi.object({
     name: Joi.string().required(),
     price: Joi.string(),
-    expiryDate : Joi.date(),
     description : Joi.string(),
     sku : Joi.string(),
     imageUrl : Joi.string(),

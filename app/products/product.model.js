@@ -11,9 +11,6 @@ const Product = mongoose.Schema({
   imageUrl: {
     type: String
   },
-  expiryDate: {
-    type: Date
-  },
   price: {
     type: Number
   },
