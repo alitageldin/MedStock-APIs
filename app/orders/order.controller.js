@@ -16,24 +16,33 @@ router.post('/create', async (req, res) => {
   })
 
 
-  router.get('/get-user-all-order/:id', async (req, res) => {
+  router.get('/get-user-all-order', async (req, res) => {
     try {
-      const orders =await orderService.getAllUserOrder(req.params.id)
+      const orders =await orderService.getAllUserOrder(req.query)
       return res.status(SUCCESS).send(orders)
     } catch (error) {
       return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
     }
   })
 
-  router.get('/get-seller-all-order/:id', async (req, res) => {
+  router.get('/get-seller-all-order', async (req, res) => {
     try {
-      const orders =await orderService.getAllSellerOrder(req.params.id)
+      const orders =await orderService.getAllSellerOrder(req.query)
       return res.status(SUCCESS).send(orders)
     } catch (error) {
       return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
     }
   })
 
+
+  router.get('/get-all-orders', async (req, res) => {
+    try {
+      const orders =await orderService.getAllOrders(req.query)
+      return res.status(SUCCESS).send(orders)
+    } catch (error) {
+      return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+    }
+  })
 
 
 

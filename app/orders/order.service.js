@@ -42,7 +42,7 @@ exports.create = async (data) => {
   }
 
 
-  exports.getAllUserOrder = async (id) => {
+  exports.getAllUserOrderOld = async (id) => {
     try {
       var orders = Order.find({'userId': id})
     //   var updatedOrders = orders; //JSON.parse(JSON.stringify(orders));
@@ -65,10 +65,317 @@ exports.create = async (data) => {
   }
 
 
-  exports.getAllSellerOrder = async (id) => {
+  exports.getAllUserOrder = async (queryParams) => {
+    try {
+      const { sortBy } = queryParams
+      const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+      const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+      const q = queryParams.q ? queryParams.q : ''
+      const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+      const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+      const query = [{ }]
+        
+    console.log(queryParams);
+      const pipline = [
+        {
+          $match: {
+            $or: query
+          }
+        },
+        { $skip: skip },
+        { $limit: pageSize },
+        { $sort: { [sortBy]: order } }
+      ]
+      const matchIndex = pipline.findIndex(aq => aq.$match)
+      if (queryParams.userId) {
+        console.log(queryParams.userId);
+        pipline[matchIndex] = {
+          $match: {
+            ...pipline[matchIndex].$match,
+            userId: mongoose.Types.ObjectId(queryParams.userId) 
+          }
+        }
+        console.log(pipline);
+      }
+      let orders = await Order.aggregate([
+        {
+          $facet: {
+            results: [
+              {
+                $lookup: {
+                  from: 'orderdetails',
+                  localField: '_id',
+                  foreignField: 'orderId',
+                  as: 'orderDetails',
+                }
+              },
+              {
+                $unwind: {
+                  path: "$orderDetails",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "orderDetails.userId",
+                  foreignField: "_id",
+                  as: "orderDetails.buyer"
+                }
+              },
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "orderDetails.sellerId",
+                  foreignField: "_id",
+                  as: "orderDetails.seller"
+                }
+              },
+              {
+                $lookup: {
+                  from: "sellerproducts",
+                  localField: "orderDetails.sellerProductId",
+                  foreignField: "_id",
+                  as: "orderDetails.product"
+                }
+              },
+              {
+                $unwind: {
+                  path: "$orderDetails.product",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: "sellerproductimages",
+                  localField: "orderDetails.product._id",
+                  foreignField: "sellerProductId",
+                  as: "orderDetails.product.productImages"
+                }
+              },
+            
+              ...pipline
+            ],
+            count: [
+              { $match: { ...pipline[matchIndex].$match } },
+              { $count: 'totalCount' }]
+          }
+        }
+      ])
+    //   orders = JSON.parse(JSON.stringify(orders))
+  
+      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
+      // try{
+      //   await products.forEach(elem => {
+      //     console.log(elem._id.toString());
+      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
+      //     elem['productImages'] = productImages;
+      //     console.log(productImages);
+      //   })
+      // }
+      // catch (error) {
+      //   throw error
+      // }
+     
+      return orders
+    } catch (error) {
+      throw error
+    }
+  }
+
+
+  exports.getAllSellerOrderOld = async (id) => {
     try {
         var oderDetails = OrderDetails.find({'sellerId': id})
       return oderDetails;
+    } catch (error) {
+      throw error
+    }
+  }
+
+  exports.getAllSellerOrder = async (queryParams) => {
+    try {
+      const { sortBy } = queryParams
+      const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+      const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+      const q = queryParams.q ? queryParams.q : ''
+      const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+      const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+      const query = [{ }]
+        
+    console.log(queryParams);
+      const pipline = [
+        {
+          $match: {
+            $or: query
+          }
+        },
+        { $skip: skip },
+        { $limit: pageSize },
+        { $sort: { [sortBy]: order } }
+      ]
+      const matchIndex = pipline.findIndex(aq => aq.$match)
+      if (queryParams.sellerId) {
+        console.log(queryParams.sellerId);
+        pipline[matchIndex] = {
+          $match: {
+            ...pipline[matchIndex].$match,
+            sellerId: mongoose.Types.ObjectId(queryParams.sellerId) 
+          }
+        }
+        console.log(pipline);
+      }
+      let orders = await OrderDetails.aggregate([
+        {
+          $facet: {
+            results: [
+              {
+                $lookup: {
+                  from: 'sellerproducts',
+                  localField: 'sellerProductId',
+                  foreignField: '_id',
+                  as: 'sellerproduct',
+                }
+              },
+              {
+                $unwind: {
+                  path: "$sellerproduct",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: "sellerproductimages",
+                  localField: "sellerproduct._id",
+                  foreignField: "sellerProductId",
+                  as: "sellerproduct.productImages"
+                }
+              },
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "userId",
+                  foreignField: "_id",
+                  as: "user"
+                }
+              },
+              ...pipline
+            ],
+            count: [
+              { $match: { ...pipline[matchIndex].$match } },
+              { $count: 'totalCount' }]
+          }
+        }
+      ])
+    //   orders = JSON.parse(JSON.stringify(orders))
+  
+      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
+      // try{
+      //   await products.forEach(elem => {
+      //     console.log(elem._id.toString());
+      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
+      //     elem['productImages'] = productImages;
+      //     console.log(productImages);
+      //   })
+      // }
+      // catch (error) {
+      //   throw error
+      // }
+     
+      return orders
+    } catch (error) {
+      throw error
+    }
+  }
+
+  exports.getAllOrders= async (queryParams) => {
+    try {
+      const { sortBy } = queryParams
+      const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+      const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+      const q = queryParams.q ? queryParams.q : ''
+      const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+      const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+      const query = [{ }]
+        
+    console.log(queryParams);
+      const pipline = [
+        {
+          $match: {
+            $or: query
+          }
+        },
+        { $skip: skip },
+        { $limit: pageSize },
+        { $sort: { [sortBy]: order } }
+      ]
+      const matchIndex = pipline.findIndex(aq => aq.$match)
+      let orders = await OrderDetails.aggregate([
+        {
+          $facet: {
+            results: [
+              {
+                $lookup: {
+                  from: 'sellerproducts',
+                  localField: 'sellerProductId',
+                  foreignField: '_id',
+                  as: 'sellerproduct',
+                }
+              },
+              {
+                $unwind: {
+                  path: "$sellerproduct",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: "sellerproductimages",
+                  localField: "sellerproduct._id",
+                  foreignField: "sellerProductId",
+                  as: "sellerproduct.productImages"
+                }
+              },
+              {
+                $lookup: {
+                  from: "products",
+                  localField: "sellerproduct.productId",
+                  foreignField: "_id",
+                  as: "sellerproduct.product"
+                }
+              },
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "userId",
+                  foreignField: "_id",
+                  as: "user"
+                }
+              },
+              ...pipline
+            ],
+            count: [
+              { $match: { ...pipline[matchIndex].$match } },
+              { $count: 'totalCount' }]
+          }
+        }
+      ])
+    //   orders = JSON.parse(JSON.stringify(orders))
+  
+      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
+      // try{
+      //   await products.forEach(elem => {
+      //     console.log(elem._id.toString());
+      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
+      //     elem['productImages'] = productImages;
+      //     console.log(productImages);
+      //   })
+      // }
+      // catch (error) {
+      //   throw error
+      // }
+     
+      return orders
     } catch (error) {
       throw error
     }

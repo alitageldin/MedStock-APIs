@@ -329,7 +329,6 @@ exports.update = async (id, req, files) => {
     }
     product.name = req.body.name ? req.body.name : product.name;
     product.price = req.body.price ? req.body.price :product.price
-    product.expiryDate = req.body.expiryDate ? req.body.expiryDate :  product.expiryDate
     product.categoryId = req.body.categoryId ? req.body.categoryId : product.categoryId
     product.sku = req.body.sku ? req.body.sku : product.sku
     product.description = req.body.description ? req.body.description : product.description
