@@ -97,62 +97,91 @@ exports.create = async (data) => {
         }
         console.log(pipline);
       }
+
+      if (queryParams.orderId) {
+        console.log(queryParams.orderId);
+        pipline[matchIndex] = {
+          $match: {
+            ...pipline[matchIndex].$match,
+            _id: mongoose.Types.ObjectId(queryParams.orderId) 
+          }
+        }
+        console.log(pipline);
+      }
       let orders = await Order.aggregate([
         {
           $facet: {
             results: [
               {
                 $lookup: {
-                  from: 'orderdetails',
-                  localField: '_id',
-                  foreignField: 'orderId',
-                  as: 'orderDetails',
+                    from: "orderdetails",
+                    let: { orderdetailid: { $toObjectId: "$_id" } },
+                    pipeline: [{ $match: { $expr: { $eq: ["$orderId", "$$orderdetailid"] } } },
+                    {
+                        $lookup: {
+                            from: "users",
+                            let: { userid: { $toObjectId: "$userId" } },
+                            pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userid"] } } }],
+                            as: "buyer"
+                        },
+                    }, {
+                        $unwind: {
+                            path: "$buyer",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "users",
+                            let: { sellerId: { $toObjectId: "$sellerId" } },
+                            pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$sellerId"] } } }],
+                            as: "seller"
+                        },
+                    }, {
+                        $unwind: {
+                            path: "$seller",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "sellerproducts",
+                            let: { sellerProductId: { $toObjectId: "$sellerProductId" } },
+                            pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$sellerProductId"] } } },
+                            {
+                                $lookup: {
+                                    from: "products",
+                                    let: { productId: { $toObjectId: "$productId" } },
+                                    pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$productId"] } } }],
+                                    as: "product"
+                                },
+                            }, {
+                                $unwind: {
+                                    path: "$product",
+                                    preserveNullAndEmptyArrays: true
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: "sellerproductimages",
+                                    let: { id: { $toObjectId: "$_id" } },
+                                    pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } }],
+                                    as: "productImages"
+                                },
+                            },
+                            ],
+                            as: "sellerProduct"
+                        },
+                    }, {
+                        $unwind: {
+                            path: "$sellerProduct",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },],
+                    as: "orderDetails"
+        
                 }
-              },
-              {
-                $unwind: {
-                  path: "$orderDetails",
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: "users",
-                  localField: "orderDetails.userId",
-                  foreignField: "_id",
-                  as: "orderDetails.buyer"
-                }
-              },
-              {
-                $lookup: {
-                  from: "users",
-                  localField: "orderDetails.sellerId",
-                  foreignField: "_id",
-                  as: "orderDetails.seller"
-                }
-              },
-              {
-                $lookup: {
-                  from: "sellerproducts",
-                  localField: "orderDetails.sellerProductId",
-                  foreignField: "_id",
-                  as: "orderDetails.product"
-                }
-              },
-              {
-                $unwind: {
-                  path: "$orderDetails.product",
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: "sellerproductimages",
-                  localField: "orderDetails.product._id",
-                  foreignField: "sellerProductId",
-                  as: "orderDetails.product.productImages"
-                }
-              },
+            },
             
               ...pipline
             ],
@@ -225,6 +254,16 @@ exports.create = async (data) => {
         }
         console.log(pipline);
       }
+      if (queryParams.orderId) {
+        console.log(queryParams.orderId);
+        pipline[matchIndex] = {
+          $match: {
+            ...pipline[matchIndex].$match,
+            _id: mongoose.Types.ObjectId(queryParams.orderId) 
+          }
+        }
+        console.log(pipline);
+      }
       let orders = await OrderDetails.aggregate([
         {
           $facet: {
@@ -245,6 +284,20 @@ exports.create = async (data) => {
               },
               {
                 $lookup: {
+                  from: "products",
+                  localField: "sellerproduct.productId",
+                  foreignField: "_id",
+                  as: "sellerproduct.product"
+                }
+              },
+              {
+                $unwind: {
+                  path: "$sellerproduct.product",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
                   from: "sellerproductimages",
                   localField: "sellerproduct._id",
                   foreignField: "sellerProductId",
@@ -257,6 +310,26 @@ exports.create = async (data) => {
                   localField: "userId",
                   foreignField: "_id",
                   as: "user"
+                }
+              },
+              {
+                $unwind: {
+                  path: "$user",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+               {
+                $lookup: {
+                  from: "users",
+                  localField: "sellerId",
+                  foreignField: "_id",
+                  as: "seller"
+                }
+              },
+              {
+                $unwind: {
+                  path: "$seller",
+                  preserveNullAndEmptyArrays: true
                 }
               },
               ...pipline
@@ -345,11 +418,37 @@ exports.create = async (data) => {
                 }
               },
               {
+                $unwind: {
+                  path: "$sellerproduct.product",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
                 $lookup: {
                   from: "users",
                   localField: "userId",
                   foreignField: "_id",
                   as: "user"
+                }
+              },
+              {
+                $unwind: {
+                  path: "$user",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "sellerId",
+                  foreignField: "_id",
+                  as: "seller"
+                }
+              },
+              {
+                $unwind: {
+                  path: "$seller",
+                  preserveNullAndEmptyArrays: true
                 }
               },
               ...pipline

@@ -124,7 +124,7 @@ router.put('/me', isUser, uploadFile.fields([
 })
 router.get('/me', isUser, async (req, res) => {
   try {
-    const userProfile = await getMyProfile(req.body.id)
+    const userProfile = await getMyProfile(req.query.id)
     return res.status(SUCCESS).send({ ...userProfile })
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })

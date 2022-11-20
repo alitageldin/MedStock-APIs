@@ -56,6 +56,12 @@ exports.getAll = async (id) => {
                 as: 'category'
               }
             },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
+              }
+            },
             ...pipline
           ],
           count: [
@@ -136,11 +142,23 @@ exports.getSellerProducts = async (queryParams) => {
               }
             },
             {
+              $unwind: {
+                path: "$product",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $lookup: {
                 from: 'categories',
                 localField: 'categoryId',
                 foreignField: '_id',
                 as: 'category'
+              }
+            },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
               }
             },
             ...pipline

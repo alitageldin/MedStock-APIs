@@ -41,6 +41,12 @@ exports.getAll = async (queryParams) => {
                 as: 'category'
               }
             },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
+              }
+            },
             ...pipline
           ],
           count: [
@@ -102,6 +108,12 @@ exports.searchProduct1 = async (body) => {
                 localField: 'categoryId',
                 foreignField: '_id',
                 as: 'category'
+              }
+            },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
               }
             },
             ...pipline
@@ -174,6 +186,12 @@ exports.searchProduct = async (body) => {
                 localField: 'categoryId',
                 foreignField: '_id',
                 as: 'category'
+              }
+            },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
               }
             },
             ...pipline
