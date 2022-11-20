@@ -254,6 +254,16 @@ exports.create = async (data) => {
         }
         console.log(pipline);
       }
+      if (queryParams.userId) {
+        console.log(queryParams.userId);
+        pipline[matchIndex] = {
+          $match: {
+            ...pipline[matchIndex].$match,
+            sellerId: mongoose.Types.ObjectId(queryParams.userId) 
+          }
+        }
+        console.log(pipline);
+      }
       if (queryParams.orderId) {
         console.log(queryParams.orderId);
         pipline[matchIndex] = {
