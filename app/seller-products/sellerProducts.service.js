@@ -121,6 +121,14 @@ exports.getSellerProducts = async (queryParams) => {
         }
       }
     }
+    if (queryParams.sellerProductId) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          _id: mongoose.Types.ObjectId(queryParams.sellerProductId) 
+        }
+      }
+    }
     let products = await Product.aggregate([
       {
         $facet: {
@@ -188,6 +196,113 @@ exports.getSellerProducts = async (queryParams) => {
   } catch (error) {
     console.log(error);
     throw error
+  }
+}
+
+exports.getSpecificSellerProduct = async (queryParams) => {
+  try {
+    const { sortBy } = queryParams
+    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    const id = queryParams.id ? queryParams.id : ''
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 1000
+    const q = queryParams.q ? queryParams.q : ''
+    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+    const query = [{}]
+
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+    
+    if (id) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          userId: mongoose.Types.ObjectId(id) 
+        }
+      }
+    }
+    if (queryParams.sellerProductId) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          _id: mongoose.Types.ObjectId(queryParams.sellerProductId) 
+        }
+      }
+    }
+    let products = await Product.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'sellerproductimages',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'products',
+                localField: 'productId',
+                foreignField: '_id',
+                as: 'product'
+              }
+            },
+            {
+              $unwind: {
+                path: "$product",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'categoryId',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+    products = JSON.parse(JSON.stringify(products))
+
+    // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
+    // try{
+    //   await products.forEach(elem => {
+    //     console.log(elem._id.toString());
+    //     let productImages = ProductImage.find({'productId': elem._id.toString()});
+    //     elem['productImages'] = productImages;
+    //     console.log(productImages);
+    //   })
+    // }
+    // catch (error) {
+    //   throw error
+    // }
+    return products[0].results[0];
+  } catch (error) {
+    return {};
   }
 }
 exports.getById = async (id) => {

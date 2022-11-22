@@ -23,6 +23,14 @@ exports.validProductSchema = (data) =>{
     categoryId: Joi.string(),
   }).validate(data)
 }
+
+exports.validPromotionSchema = (data) =>{
+  return Joi.object({
+    title: Joi.string(),
+    description : Joi.string(),
+    imageUrl : Joi.string(),
+  }).validate(data)
+}
 exports.validSellerProductSchema = (data) =>{
   return Joi.object({
     price: Joi.string(),
