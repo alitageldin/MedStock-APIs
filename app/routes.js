@@ -8,6 +8,7 @@ const categoryController = require('./categories/category.controller')
 const sellerController = require('./seller-products/sellerProducts.controller')
 const  orderController = require('./orders/order.controller')
 const promotionController = require('./promotions/promotion.controller')
+const feedbackController = require('./feedback/feedback.controller')
 
 const { isAdmin } = require('./admin/admin.service')
 const { isUser } = require('./users/user.service')
@@ -31,6 +32,7 @@ router.use('/sellerProduct',isUser || isAdmin, sellerController)
 router.use('/category',isUser || isAdmin, categoryController)
 router.use('/order',isUser || isAdmin, orderController)
 router.use('/promotion',isUser || isAdmin, promotionController)
+router.use('/feedback',isUser || isAdmin, feedbackController)
 
 router.post('/upload-file', isUser, upload.single('file'), (req, res) => {
   try {

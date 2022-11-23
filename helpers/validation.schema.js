@@ -31,6 +31,17 @@ exports.validPromotionSchema = (data) =>{
     imageUrl : Joi.string(),
   }).validate(data)
 }
+
+exports.validFeedbackSchema = (data) =>{
+  return Joi.object({
+    subject: Joi.string(),
+    message : Joi.string(),
+    imageUrl : Joi.string(),
+    userId: Joi.string(),
+    isSeller: Joi.boolean(),
+    isBuyer: Joi.boolean()
+  }).validate(data)
+}
 exports.validSellerProductSchema = (data) =>{
   return Joi.object({
     price: Joi.string(),
