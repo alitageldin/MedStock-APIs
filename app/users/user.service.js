@@ -28,7 +28,7 @@ exports.userLogin = async (body) => {
     const user = await User.findOne(q).lean()
 
     if (!user) {
-      throw ErrorHandler('No associated user found.', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found..', BAD_REQUEST)
     }
     if (user.isBanned) {
       throw ErrorHandler('Account suspended contact adminstrator.', FORBIDDEN)
@@ -204,7 +204,7 @@ exports.updateUser = async (req, id) => {
     console.log(id);
     let user = await User.findById(id)
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     // adding userType to body for conditional validation
     const { files } = req
@@ -254,7 +254,7 @@ exports.getMyProfile = async (id) => {
   try {
     const user = await User.findById(id).lean()
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     delete user.password
 
@@ -267,7 +267,7 @@ exports.adminUpdatesUser = async (req, id) => {
   try {
     const user = await User.findById(id)
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     const { isProfileVerified, isBanned, skills } = req.body
     if (skills && skills.length) {
@@ -414,7 +414,7 @@ exports.deleteFile = async (userId, { attachmentType, address }) => {
   try {
     const dbUserInstance = await User.findById(userId)
     if (!dbUserInstance) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     if (!attachmentType || !address) {
       throw ErrorHandler('attachmentType and address are required', BAD_REQUEST)
@@ -447,7 +447,7 @@ exports.verifyEmail = async (id) => {
     }
     const user = await User.findById(id)
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     user.isEmailVerified = true
     user.save()
@@ -460,7 +460,7 @@ exports.verifyEmail = async (id) => {
 //   try {
 //     const user = await User.findById(userId)
 //     if (!user) {
-//       throw ErrorHandler('no associated user found', BAD_REQUEST)
+//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
 //     }
 //     const { error } = validPaymentMehthodSchema(paymentMethod)
 
@@ -502,7 +502,7 @@ exports.verifyEmail = async (id) => {
 //   try {
 //     const user = await User.findById(userId).lean()
 //     if (!user) {
-//       throw ErrorHandler('no associated user found', BAD_REQUEST)
+//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
 //     }
 //     if (user.paymentMethods && user.paymentMethods.length) {
 //       const resp = []
@@ -524,7 +524,7 @@ exports.verifyEmail = async (id) => {
 //   try {
 //     const user = await User.findById(userId)
 //     if (!user) {
-//       throw ErrorHandler('no associated user found', BAD_REQUEST)
+//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
 //     }
 //     const { error } = validPaymentMehthodSchema(paymentMethod)
 //     if (error) {
@@ -567,7 +567,7 @@ exports.verifyEmail = async (id) => {
 //   try {
 //     const user = await User.findById(userId)
 //     if (!user) {
-//       throw ErrorHandler('no associated user found', BAD_REQUEST)
+//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
 //     }
 //     if (user.paymentMethods && user.paymentMethods.length) {
 //       const existingPM = user.paymentMethods.findIndex((pm) => pm._id.toString() === pId)
@@ -591,7 +591,7 @@ exports.reSendVerificationEmail = async (email) => {
     }
     const user = await User.findOne({ email: email })
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     sendEmail(user.email,
       {
@@ -609,23 +609,22 @@ exports.reSendVerificationEmail = async (email) => {
 exports.forgetPassword = async (body) => {
   try {
     if (!body.email) {
-      throw ErrorHandler('email is required', BAD_REQUEST)
+      throw ErrorHandler('Email is required', BAD_REQUEST)
     }
     const user = await User.findOne({ email: body.email })
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No associated account found.', BAD_REQUEST)
     }
     const accessToken = jwt.sign({
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role.title,
       id: user._id,
     }, process.env.SECRET_JWT)
     sendEmail(user.email,
       {
         fullName: user.firstName + " " + user.lastName,
         email: user.email,
-        forgetPasswordLink: `${process.env.SERVER_URL}user/reset-password/${accessToken}`
+        forgetPasswordLink: `${process.env.SERVER_URL}#/reset-password/${accessToken}`
       },
       'Forget Password', 'forget-password.hbs')
 
@@ -637,15 +636,15 @@ exports.forgetPassword = async (body) => {
 exports.changePassword = async (body) => {
   try {
     if (!body.token || !body.password) {
-      throw ErrorHandler('token and password are required', BAD_REQUEST)
+      throw ErrorHandler('Token and Password are required', BAD_REQUEST)
     }
     const payload = jwt.decode(body.token)
     if (!payload.id) {
-      throw ErrorHandler('id not found', BAD_REQUEST)
+      throw ErrorHandler('Id not found', BAD_REQUEST)
     }
     const user = await User.findById(payload.id)
     if (!user) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No associated account found', BAD_REQUEST)
     }
     const salt = await bcrypt.genSalt(10)
     if (user.authType !== SOCIAL) {
@@ -658,7 +657,6 @@ exports.changePassword = async (body) => {
       id: user._id,
       firstName: user.fistName,
       lastName: user.lastName,
-      role: user.role.title,
       email: user.email
     }, process.env.SECRET_JWT)
     return accessToken
@@ -720,7 +718,7 @@ exports.becomeASeller = async (id) => {
   try {
     let saved = await User.findById(id)
     if (!saved) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     saved.isSeller = true;
     await saved.save()
@@ -754,7 +752,7 @@ exports.becomeABuyer = async (id) => {
   try {
     let saved = await User.findById(id)
     if (!saved) {
-      throw ErrorHandler('no associated user found', BAD_REQUEST)
+      throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
     saved.isBuyer = true;
     await saved.save()
