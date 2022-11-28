@@ -16,5 +16,4 @@ exports.seedSuperAdmin = async () => {
     role: roleSA._id
   })
   await newAdmin.save()
-  console.log('super admin user created succesfully')
 }

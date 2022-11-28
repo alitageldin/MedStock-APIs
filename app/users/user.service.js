@@ -8,14 +8,12 @@ const User = require('./user.model')
 const { sendEmail } = require('../emails/mailer')
 const fs = require('fs')
 const { promisify } = require('util')
-// const Job = require('../jobs/job.model')
 const { CLIENT, FREELANCER, SOCIAL, ACCEPTED, SELLER, BUYER, ADMIN } = require('../../helpers/constants')
 const unlinkAsync = promisify(fs.unlink)
 const moment = require('moment')
 const Roles = require('../../app/roles/role.model')
 const Admin = require('../admin/admin.model')
 
-// const { sendSMS } = require('../../helpers/messaging')
 exports.userLogin = async (body) => {
   try {
     if ((!body.email || body.email.trim().length === 0) && (!body.phone || body.phone.trim().length === 0)) {
@@ -87,8 +85,6 @@ exports.userSignUp = async (body, files) => {
     if (user) {
       throw ErrorHandler('email or phone already exist', BAD_REQUEST)
     }
-    // const roleBuyer = await Roles.findOne({ title: BUYER });
-    // body.role= roleBuyer._id;
     let role = 'Seller';
     if(body.isSeller){
       if(!body.username){
@@ -201,7 +197,6 @@ exports.verifyOTP = async (currentUser, otp) => {
 }
 exports.updateUser = async (req, id) => {
   try {
-    console.log(id);
     let user = await User.findById(id)
     if (!user) {
       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
@@ -223,22 +218,16 @@ exports.updateUser = async (req, id) => {
     }
     user.firstName = req.body.firstName ? req.body.firstName : user.firstName
     user.lastName = req.body.lastName ? req.body.lastName : user.lastName
-
-    // user.phone = req.body.phone ? req.body.phone : user.phone
     user.country = req.body.country ? req.body.country : user.country
-
-    user.username = user.username //req.body.username ? req.body.username : user.username
+    user.username = user.username
     user.pharmacyName = req.body.pharmacyName ? req.body.pharmacyName : user.pharmacyName
     user.city = req.body.city ? req.body.city : user.city
     user.region = req.body.region ? req.body.region : user.region
     user.businessId = req.body.businessId ? req.body.businessId : user.businessId
-
     user.address = req.body.address ? req.body.address : user.address
     user.profileImage = req.body.profileImage ? req.body.profileImage : user.profileImage
     user.heardFrom = req.body.heardFrom ? req.body.heardFrom : user.heardFrom
-    // user.aboutMe = req.body.aboutMe ? req.body.aboutMe : user.aboutMe
     user.dob = req.body.dob ? req.body.dob : user.dob
-    // user.clientProfession = req.body.clientProfession ? req.body.clientProfession : user.clientProfession
     user.signUpCompleted = (req.body.signUpCompleted && typeof (JSON.parse(req.body.signUpCompleted)) === 'boolean') ? JSON.parse(req.body.signUpCompleted) : user.signUpCompleted
     await user.save()
     user = JSON.parse(JSON.stringify(user))
@@ -456,134 +445,6 @@ exports.verifyEmail = async (id) => {
     throw ErrorHandler(error.message, INTERNAL_ERR)
   }
 }
-// exports.addPaymentMethod = async (userId, paymentMethod) => {
-//   try {
-//     const user = await User.findById(userId)
-//     if (!user) {
-//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
-//     }
-//     const { error } = validPaymentMehthodSchema(paymentMethod)
-
-//     if (error) {
-//       throw ErrorHandler(error.message, BAD_REQUEST)
-//     }
-//     if (user.paymentMethods && user.paymentMethods.length) {
-//       const duplicatePM = user.paymentMethods.findIndex((pm) => decryptText(pm.cardNumber) === paymentMethod.cardNumber) > -1
-//       if (duplicatePM) {
-//         throw ErrorHandler('duplicate cardNumber', BAD_REQUEST)
-//       }
-//       paymentMethod.isDefault = paymentMethod.isDefault !== undefined ? JSON.parse(paymentMethod.isDefault) : false
-//       if (typeof (paymentMethod.isDefault) === 'boolean' && paymentMethod.isDefault === true) {
-//         user.paymentMethods.forEach(pm => {
-//           pm.isDefault = false
-//         })
-//       }
-//       Object.keys(paymentMethod).forEach((k) => {
-//         if (typeof paymentMethod[k] === 'string') {
-//           paymentMethod[k] = encryptText(paymentMethod[k])
-//         }
-//       })
-//       user.paymentMethods.push(paymentMethod)
-//     } else {
-//       Object.keys(paymentMethod).forEach((k) => {
-//         if (typeof paymentMethod[k] === 'string') {
-//           paymentMethod[k] = encryptText(paymentMethod[k])
-//         }
-//       })
-//       user.paymentMethods = [paymentMethod]
-//     }
-//     await user.save()
-//     return
-//   } catch (error) {
-//     throw ErrorHandler(error.message, INTERNAL_ERR)
-//   }
-// }
-// exports.getMyPaymentMethods = async (userId) => {
-//   try {
-//     const user = await User.findById(userId).lean()
-//     if (!user) {
-//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
-//     }
-//     if (user.paymentMethods && user.paymentMethods.length) {
-//       const resp = []
-//       user.paymentMethods.forEach(pm => {
-//         Object.keys(pm).forEach((k) => {
-//           pm[k] = k === '_id' || k === 'isDefault' ? pm[k] : decryptText(pm[k])
-//         })
-//         resp.push(pm)
-//       })
-//       return resp
-//     } else {
-//       return []
-//     }
-//   } catch (error) {
-
-//   }
-// }
-// exports.updatePaymentMethod = async (userId, paymentMethod, paymentMethodId) => {
-//   try {
-//     const user = await User.findById(userId)
-//     if (!user) {
-//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
-//     }
-//     const { error } = validPaymentMehthodSchema(paymentMethod)
-//     if (error) {
-//       throw ErrorHandler(error.message, BAD_REQUEST)
-//     }
-//     const existingIndex = user.paymentMethods.findIndex((pm) => pm._id.toString() === paymentMethodId)
-//     if (existingIndex < 0) {
-//       throw ErrorHandler('paymentMethod not found', BAD_REQUEST)
-//     }
-//     let existingCardNumbers = 0
-//     user.paymentMethods.forEach(pm => {
-//       if (decryptText(pm.cardNumber) === paymentMethod.cardNumber) {
-//         existingCardNumbers++
-//       }
-//     })
-//     if (existingCardNumbers > 1) {
-//       throw ErrorHandler('duplicate cardNumber', BAD_REQUEST)
-//     }
-//     paymentMethod.isDefault = paymentMethod.isDefault !== undefined ? JSON.parse(paymentMethod.isDefault) : false
-//     if (typeof (paymentMethod.isDefault) === 'boolean' && paymentMethod.isDefault === true) {
-//       user.paymentMethods.forEach(pm => {
-//         pm.isDefault = false
-//       })
-//     }
-//     Object.keys(paymentMethod).forEach((k) => {
-//       if (typeof paymentMethod[k] === 'string') {
-//         paymentMethod[k] = encryptText(paymentMethod[k])
-//       }
-//     })
-//     // injecting old _id again
-//     paymentMethod._id = user.paymentMethods[existingIndex]._id
-//     user.paymentMethods[existingIndex] = paymentMethod
-//     await user.save()
-//     return
-//   } catch (error) {
-//     throw ErrorHandler(error.message, INTERNAL_ERR)
-//   }
-// }
-// exports.deletePaymentMethod = async (userId, pId) => {
-//   try {
-//     const user = await User.findById(userId)
-//     if (!user) {
-//       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
-//     }
-//     if (user.paymentMethods && user.paymentMethods.length) {
-//       const existingPM = user.paymentMethods.findIndex((pm) => pm._id.toString() === pId)
-//       if (existingPM < 0) {
-//         throw ErrorHandler('no payment method found', BAD_REQUEST)
-//       }
-//       user.paymentMethods.splice(existingPM, 1)
-//       user.save()
-//       return
-//     } else {
-//       throw ErrorHandler('no payment method found', BAD_REQUEST)
-//     }
-//   } catch (error) {
-//     throw ErrorHandler(error.message, INTERNAL_ERR)
-//   }
-// }
 exports.reSendVerificationEmail = async (email) => {
   try {
     if (!email) {

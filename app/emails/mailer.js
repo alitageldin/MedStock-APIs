@@ -19,34 +19,10 @@ exports.sendEmail = async (recipient, data, subject, templateName, attachments) 
   sgMail
       .send(msg)
       .then((response) => {
-        console.log(response[0].statusCode)
-        console.log(response[0].headers)
       })
       .catch((error) => {
-        console.error(error)
       });
-  //   const transporter = nodemailer.createTransport({
-  //     host: process.env.SMTP_HOST, // hostname
-  //     secureConnection: false, // TLS requires secureConnection to be false
-  //     port: 587, // port for secure SMTP
-  //     greetingTimeout: 1000,
-  //     auth: {
-  //       user: process.env.EMAIL,
-  //       pass: process.env.EMAIL_PASS
-  //     },
-  //     tls: {
-  //       ciphers: 'SSLv3'
-  //     }
-  //   })
-  //   await transporter.sendMail({
-  //     from: process.env.EMAIL,
-  //     to: recipient,
-  //     subject: subject,
-  //     html: template(data),
-  //     attachments: attachments
-  //   })
   } catch (error) {
-    console.log('eerr', error)
   }
 
 

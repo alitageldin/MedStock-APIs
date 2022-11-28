@@ -115,7 +115,6 @@ router.put('/me', isUser, uploadFile.fields([
   { name: 'profileImage', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    console.log(req);
     const updatedUser = await updateUser(req, req.body.id)
     return res.status(SUCCESS).send(updatedUser)
   } catch (error) {
@@ -138,44 +137,6 @@ router.delete('/me/attachment', isUser, async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-// router.post('/me/payment-method', isUser, async (req, res) => {
-//   try {
-//     await addPaymentMethod(req.user.id, req.body)
-//     return res.status(SUCCESS).send({})
-//   } catch (error) {
-//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
-//   }
-// })
-// router.get('/me/payment-method', isUser, async (req, res) => {
-//   try {
-//     const paymentMethods = await getMyPaymentMethods(req.user.id)
-//     return res.status(SUCCESS).send({ paymentMethods })
-//   } catch (error) {
-//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
-//   }
-// })
-// router.put('/me/payment-method/:id', isUser, async (req, res) => {
-//   try {
-//     await updatePaymentMethod(req.user.id, req.body, req.params.id)
-//     return res.status(SUCCESS).send({})
-//   } catch (error) {
-//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
-//   }
-// })
-// router.delete('/me/payment-method/:id', isUser, async (req, res) => {
-//   try {
-//     await deletePaymentMethod(req.user.id, req.params.id)
-//     return res.status(SUCCESS).send({})
-//   } catch (error) {
-//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
-//   }
-// })
-/*
- *
- *   * ADMIN ROUTES *
- *
- */
-
 router.get('/', isAdmin, async (req, res) => {
   try {
     const data = await getAll(req.query)

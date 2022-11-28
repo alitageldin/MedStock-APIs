@@ -48,7 +48,6 @@ router.put('/:id', uploadFile.fields([
   { name: 'promotionImages', maxCount: 10 }
 ]), async (req, res) => {
   try {
-    console.log(req.params.id, req.body);
     const updated = await promotionService.update(req.params.id, req, req.files)
     return res.status(CREATED).send(updated)
   } catch (error) {

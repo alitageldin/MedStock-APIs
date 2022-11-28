@@ -80,7 +80,6 @@ exports.create = async (data, files) => {
 exports.update = async (id, req, files) => {
   try {
     req.body.imageUrl = files?.promotionImages && files.promotionImages.length ? files.promotionImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') })[0] : undefined
-    console.log(req.body);
     const { error } = validPromotionSchema(req.body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)

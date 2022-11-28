@@ -56,20 +56,6 @@ exports.getAll = async (queryParams) => {
       }
     ])
     products = JSON.parse(JSON.stringify(products))
-
-    // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-    // try{
-    //   await products.forEach(elem => {
-    //     console.log(elem._id.toString());
-    //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-    //     elem['productImages'] = productImages;
-    //     console.log(productImages);
-    //   })
-    // }
-    // catch (error) {
-    //   throw error
-    // }
-   
     return products
   } catch (error) {
     throw error
@@ -79,8 +65,6 @@ exports.getAll = async (queryParams) => {
 exports.searchProduct1 = async (body) => {
   try {
     const query = [{ name: { $regex: body.productName, $options: 'i' } }]
-
-
     const pipline = [
       {
         $match: {
@@ -94,14 +78,6 @@ exports.searchProduct1 = async (body) => {
       {
         $facet: {
           results: [
-            // {
-            //   $lookup: {
-            //     from: 'productimages',
-            //     localField: '_id',
-            //     foreignField: 'productId',
-            //     as: 'productImages'
-            //   }
-            // },
             {
               $lookup: {
                 from: 'categories',
@@ -125,20 +101,6 @@ exports.searchProduct1 = async (body) => {
       }
     ])
     products = JSON.parse(JSON.stringify(products))
-
-    // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-    // try{
-    //   await products.forEach(elem => {
-    //     console.log(elem._id.toString());
-    //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-    //     elem['productImages'] = productImages;
-    //     console.log(productImages);
-    //   })
-    // }
-    // catch (error) {
-    //   throw error
-    // }
-   
     return products
   } catch (error) {
     throw error
@@ -149,8 +111,6 @@ exports.searchProduct1 = async (body) => {
 exports.searchProduct = async (body) => {
   try {
     const query = [{ name: { $regex: body.productName, $options: 'i' } }]
-    // let products = await Product.find({ name: { $regex: body.productName, $options: 'i' }, categoryId: body.categoryId })
-
     const pipline = [
       {
         $match: {
@@ -160,7 +120,6 @@ exports.searchProduct = async (body) => {
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
     if (body.categoryId) {
-      console.log(body.categoryId);
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
@@ -172,14 +131,6 @@ exports.searchProduct = async (body) => {
       {
         $facet: {
           results: [
-            // {
-            //   $lookup: {
-            //     from: 'productimages',
-            //     localField: '_id',
-            //     foreignField: 'productId',
-            //     as: 'productImages'
-            //   }
-            // },
             {
               $lookup: {
                 from: 'categories',
@@ -203,20 +154,6 @@ exports.searchProduct = async (body) => {
       }
     ])
     products = JSON.parse(JSON.stringify(products))
-
-    // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-    // try{
-    //   await products.forEach(elem => {
-    //     console.log(elem._id.toString());
-    //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-    //     elem['productImages'] = productImages;
-    //     console.log(productImages);
-    //   })
-    // }
-    // catch (error) {
-    //   throw error
-    // }
-   
     return products[0].results;
   } catch (error) {
     throw error
@@ -235,8 +172,6 @@ exports.getSellerProducts = async (queryParams) => {
     const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
     const query = [{ name: { $regex: q, $options: 'i' } }]
-
-
     const pipline = [
       {
         $match: {
@@ -249,7 +184,6 @@ exports.getSellerProducts = async (queryParams) => {
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
     if (id) {
-      console.log(id);
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
@@ -261,14 +195,6 @@ exports.getSellerProducts = async (queryParams) => {
       {
         $facet: {
           results: [
-            // {
-            //   $lookup: {
-            //     from: 'productimages',
-            //     localField: '_id',
-            //     foreignField: 'productId',
-            //     as: 'productImages'
-            //   }
-            // },
             ...pipline
           ],
           count: [
@@ -278,20 +204,6 @@ exports.getSellerProducts = async (queryParams) => {
       }
     ])
     products = JSON.parse(JSON.stringify(products))
-
-    // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-    // try{
-    //   await products.forEach(elem => {
-    //     console.log(elem._id.toString());
-    //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-    //     elem['productImages'] = productImages;
-    //     console.log(productImages);
-    //   })
-    // }
-    // catch (error) {
-    //   throw error
-    // }
-   
     return products
   } catch (error) {
     throw error
@@ -310,7 +222,6 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    // const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
     data.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') })[0] : undefined
     const { error } = validProductSchema(data)
     if (error) {
@@ -318,15 +229,6 @@ exports.create = async (data, files) => {
     }
     const product = new Product(data)
     await product.save()
-    // if(productImages && productImages.length > 0){
-    //   await productImages.forEach(elem => {
-    //     let productImage = new ProductImage();
-    //     productImage.path = elem;
-    //     productImage.productId = product._id;
-    //     productImage.save();
-    //   })
-    // }
-   
     return product;
   } catch (error) {
     throw error
@@ -334,9 +236,7 @@ exports.create = async (data, files) => {
 }
 exports.update = async (id, req, files) => {
   try {
-    // const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') }) : undefined
     req.body.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${process.env.BK_SERVER_URL}${item.path}`.replace('/uploads','') })[0] : undefined
-    console.log(req.body);
     const { error } = validProductSchema(req.body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -352,26 +252,6 @@ exports.update = async (id, req, files) => {
     product.description = req.body.description ? req.body.description : product.description
     product.imageUrl = req.body.imageUrl? req.body.imageUrl: product.imageUrl;
     await product.save()
-    // if(productImages && productImages.length > 0){
-    //   let productImage = await ProductImage.findOne({'productId': product._id});
-    //   if(productImage){
-    //     productImage.path = productImages[0].path;
-    //     productImage.productId = product._id;
-    //     productImage.save();
-    //   }else{
-    //     console.log(productImages)
-    //     if(productImages){
-    //       await productImages.forEach(elem => {
-    //         let productImage = new ProductImage();
-    //         productImage.path = elem;
-    //         productImage.productId = product._id;
-    //         productImage.save();
-    //       })
-    //     }
-        
-    //   }
-    // }
-    
   } catch (error) {
     throw error
   }

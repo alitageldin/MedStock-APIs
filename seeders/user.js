@@ -26,15 +26,4 @@ exports.seedSeller = async () => {
     role: roleSE._id
   })
   await sellerUser.save()
-  console.log('Seller user created succesfully')
 }
-
-// async function seedData () {
-//   await mongoose.connect(process.env.MONGO_URI, async (err, r) => {
-//     if (!err) {
-//       console.log('mongoDB connected successfully to ' + process.env.MONGO_URI)
-//       await seedSuperAdmin()
-//     }
-//   })
-// }
-// seedData()

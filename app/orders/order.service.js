@@ -10,10 +10,6 @@ const { default: mongoose } = require('mongoose')
 
 exports.create = async (data) => {
     try {
-    //   const { error } = validOrderSchema(data)
-    //   if (error) {
-    //     throw ErrorHandler(error.message, BAD_REQUEST)
-    //   }
       const order = new Order()
       order.totalAmmount = data.totalAmmount;
       order.discount = data.discount;
@@ -45,19 +41,6 @@ exports.create = async (data) => {
   exports.getAllUserOrderOld = async (id) => {
     try {
       var orders = Order.find({'userId': id})
-    //   var updatedOrders = orders; //JSON.parse(JSON.stringify(orders));
-    //   console.log(updatedOrders);
-    //   if(updatedOrders && updatedOrders.length > 0)
-    //   { 
-    //     console.log(updatedOrders);
-    //     await updatedOrders.forEach(elem =>{
-    //         console.log(elem._id);
-    //         let oderDetails = OrderDetails.find({'orderId': elem._id})
-    //         if(oderDetails && oderDetails.length > 0){
-    //             updatedOrders['oderDetails'] = oderDetails;
-    //         }
-    //     })
-    //   }
       return orders;
     } catch (error) {
       throw error
@@ -75,7 +58,6 @@ exports.create = async (data) => {
       const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
       const query = [{ }]
         
-    console.log(queryParams);
       const pipline = [
         {
           $match: {
@@ -88,25 +70,21 @@ exports.create = async (data) => {
       ]
       const matchIndex = pipline.findIndex(aq => aq.$match)
       if (queryParams.userId) {
-        console.log(queryParams.userId);
         pipline[matchIndex] = {
           $match: {
             ...pipline[matchIndex].$match,
             userId: mongoose.Types.ObjectId(queryParams.userId) 
           }
         }
-        console.log(pipline);
       }
 
       if (queryParams.orderId) {
-        console.log(queryParams.orderId);
         pipline[matchIndex] = {
           $match: {
             ...pipline[matchIndex].$match,
             _id: mongoose.Types.ObjectId(queryParams.orderId) 
           }
         }
-        console.log(pipline);
       }
       let orders = await Order.aggregate([
         {
@@ -191,21 +169,6 @@ exports.create = async (data) => {
           }
         }
       ])
-    //   orders = JSON.parse(JSON.stringify(orders))
-  
-      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-      // try{
-      //   await products.forEach(elem => {
-      //     console.log(elem._id.toString());
-      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-      //     elem['productImages'] = productImages;
-      //     console.log(productImages);
-      //   })
-      // }
-      // catch (error) {
-      //   throw error
-      // }
-     
       return orders
     } catch (error) {
       throw error
@@ -224,7 +187,6 @@ exports.create = async (data) => {
       const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
       const query = [{ }]
         
-    console.log(queryParams);
       const pipline = [
         {
           $match: {
@@ -236,26 +198,13 @@ exports.create = async (data) => {
         { $sort: { [sortBy]: order } }
       ]
       const matchIndex = pipline.findIndex(aq => aq.$match)
-      // if (queryParams.userId) {
-      //   console.log(queryParams.userId);
-      //   pipline[matchIndex] = {
-      //     $match: {
-      //       ...pipline[matchIndex].$match,
-      //       userId: mongoose.Types.ObjectId(queryParams.userId) 
-      //     }
-      //   }
-      //   console.log(pipline);
-      // }
-
       if (queryParams.id) {
-        console.log(queryParams.id);
         pipline[matchIndex] = {
           $match: {
             ...pipline[matchIndex].$match,
             _id: mongoose.Types.ObjectId(queryParams.id) 
           }
         }
-        console.log(pipline);
       }
       let orders = await Order.aggregate([
         {
@@ -340,25 +289,10 @@ exports.create = async (data) => {
           }
         }
       ])
-    //   orders = JSON.parse(JSON.stringify(orders))
-  
-      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-      // try{
-      //   await products.forEach(elem => {
-      //     console.log(elem._id.toString());
-      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-      //     elem['productImages'] = productImages;
-      //     console.log(productImages);
-      //   })
-      // }
-      // catch (error) {
-      //   throw error
-      // }
-     
+   
       return orders[0].results[0];
     } catch (error) {
       return {};
-      // throw error
     }
   }
 
@@ -381,8 +315,6 @@ exports.create = async (data) => {
       const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
       const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
       const query = [{ }]
-        
-    console.log(queryParams);
       const pipline = [
         {
           $match: {
@@ -395,45 +327,13 @@ exports.create = async (data) => {
       ]
       const matchIndex = pipline.findIndex(aq => aq.$match)
       if (queryParams.id) {
-        console.log(queryParams.id);
         pipline[matchIndex] = {
           $match: {
             ...pipline[matchIndex].$match,
             sellerId: mongoose.Types.ObjectId(queryParams.id) 
           }
         }
-        // console.log(pipline);
       }
-      // if (queryParams.id) {
-      //   console.log(queryParams.id);
-      //   pipline[matchIndex] = {
-      //     $match: {
-      //       ...pipline[matchIndex].$match,
-      //       sellerId: mongoose.Types.ObjectId(queryParams.id) 
-      //     }
-      //   }
-      //   // console.log(pipline);
-      // }
-      // if (queryParams.orderDetailId) {
-      //   console.log(queryParams.orderDetailId);
-      //   pipline[matchIndex] = {
-      //     $match: {
-      //       ...pipline[matchIndex].$match,
-      //       _id: mongoose.Types.ObjectId(queryParams.orderDetailId) 
-      //     }
-      //   }
-      //   console.log(pipline);
-      // }
-      // if (queryParams.orderId) {
-      //   console.log(queryParams.orderId);
-      //   pipline[matchIndex] = {
-      //     $match: {
-      //       ...pipline[matchIndex].$match,
-      //       _id: mongoose.Types.ObjectId(queryParams.orderId) 
-      //     }
-      //   }
-      //   console.log(pipline);
-      // }
       let orders = await OrderDetails.aggregate([
         {
           $facet: {
@@ -510,21 +410,6 @@ exports.create = async (data) => {
           }
         }
       ])
-    //   orders = JSON.parse(JSON.stringify(orders))
-  
-      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-      // try{
-      //   await products.forEach(elem => {
-      //     console.log(elem._id.toString());
-      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-      //     elem['productImages'] = productImages;
-      //     console.log(productImages);
-      //   })
-      // }
-      // catch (error) {
-      //   throw error
-      // }
-     
       return orders;
     } catch (error) {
       return [];
@@ -543,7 +428,6 @@ exports.create = async (data) => {
       const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
       const query = [{ }]
         
-    console.log(queryParams);
       const pipline = [
         {
           $match: {
@@ -556,45 +440,21 @@ exports.create = async (data) => {
       ]
       const matchIndex = pipline.findIndex(aq => aq.$match)
       if (queryParams.sellerId) {
-        console.log(queryParams.sellerId);
         pipline[matchIndex] = {
           $match: {
             ...pipline[matchIndex].$match,
             sellerId: mongoose.Types.ObjectId(queryParams.sellerId) 
           }
         }
-        console.log(pipline);
       }
-      // if (queryParams.userId) {
-      //   console.log(queryParams.userId);
-      //   pipline[matchIndex] = {
-      //     $match: {
-      //       ...pipline[matchIndex].$match,
-      //       sellerId: mongoose.Types.ObjectId(queryParams.userId) 
-      //     }
-      //   }
-      //   console.log(pipline);
-      // }
       if (queryParams.id) {
-        console.log(queryParams.id);
         pipline[matchIndex] = {
           $match: {
             ...pipline[matchIndex].$match,
             _id: mongoose.Types.ObjectId(queryParams.id) 
           }
         }
-        console.log(pipline);
       }
-      // if (queryParams.orderId) {
-      //   console.log(queryParams.orderId);
-      //   pipline[matchIndex] = {
-      //     $match: {
-      //       ...pipline[matchIndex].$match,
-      //       _id: mongoose.Types.ObjectId(queryParams.orderId) 
-      //     }
-      //   }
-      //   console.log(pipline);
-      // }
       let orders = await OrderDetails.aggregate([
         {
           $facet: {
@@ -671,21 +531,6 @@ exports.create = async (data) => {
           }
         }
       ])
-    //   orders = JSON.parse(JSON.stringify(orders))
-  
-      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-      // try{
-      //   await products.forEach(elem => {
-      //     console.log(elem._id.toString());
-      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-      //     elem['productImages'] = productImages;
-      //     console.log(productImages);
-      //   })
-      // }
-      // catch (error) {
-      //   throw error
-      // }
-     
       return orders[0].results[0];
     } catch (error) {
       return {};
@@ -702,7 +547,6 @@ exports.create = async (data) => {
       const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
       const query = [{ }]
         
-    console.log(queryParams);
       const pipline = [
         {
           $match: {
@@ -790,21 +634,6 @@ exports.create = async (data) => {
           }
         }
       ])
-    //   orders = JSON.parse(JSON.stringify(orders))
-  
-      // let products = await Product.find(query, {}, { skip: skip, limit: pageSize }).populate('categoryId').sort({ [sortBy]: order || 1 })
-      // try{
-      //   await products.forEach(elem => {
-      //     console.log(elem._id.toString());
-      //     let productImages = ProductImage.find({'productId': elem._id.toString()});
-      //     elem['productImages'] = productImages;
-      //     console.log(productImages);
-      //   })
-      // }
-      // catch (error) {
-      //   throw error
-      // }
-     
       return orders
     } catch (error) {
       throw error

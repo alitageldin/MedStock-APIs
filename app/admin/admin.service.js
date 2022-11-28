@@ -246,7 +246,6 @@ exports.getAllSeller = async(queryParams) =>{
       { phone: { $regex: q, $options: 'i' } },
       { country: { $regex: q, $options: 'i' } },
       { address: { $regex: q, $options: 'i' } }
-      // { aboutMe: { $regex: q, $options: 'i' } }
     ]
     const pipline = [
       {
@@ -282,16 +281,6 @@ exports.getAllSeller = async(queryParams) =>{
         }
       }
     }
-    // if (skills) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       $or: [{ 'skills.name': { $in: skills } },
-    //         { 'skills.path': { $in: skills.map(s => { return new RegExp(`,${s},`) }) } }]
-    //     }
-    //   }
-    // }
-
     pipline[matchIndex] = {
       $match: {
         ...pipline[matchIndex].$match,
@@ -299,16 +288,6 @@ exports.getAllSeller = async(queryParams) =>{
 
       }
     }
-    // if (userType) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       role: userType._id
-
-    //     }
-    //   }
-    // }
-
     let users = await userModel.aggregate([
       {
         $facet: {
@@ -338,11 +317,6 @@ exports.getAllSeller = async(queryParams) =>{
       }
     ])
     users = JSON.parse(JSON.stringify(users))
-    // if (userType.title === 'Seller' && queryParams.jobCount) {
-    //   for await (const user of users[0].results) {
-    //     user.assignedJobs = await Job.countDocuments({ 'assignedTo.id': user._id, status: ACCEPTED })
-    //   }
-    // }
     return { data: users[0].results, totalCount: users[0].count[0]?.totalCount || 0 }
   } catch (error) {
     throw error
@@ -364,7 +338,6 @@ exports.getAllBuyer = async(queryParams) =>{
       { phone: { $regex: q, $options: 'i' } },
       { country: { $regex: q, $options: 'i' } },
       { address: { $regex: q, $options: 'i' } }
-      // { aboutMe: { $regex: q, $options: 'i' } }
     ]
     const pipline = [
       {
@@ -377,13 +350,6 @@ exports.getAllBuyer = async(queryParams) =>{
       { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
-
-    // pipline[matchIndex] = {
-    //   $match: {
-    //     ...pipline[matchIndex].$match,
-    //     ispendingApproval: false
-    //   }
-    // }
     if (queryParams.isBanned) {
       pipline[matchIndex] = {
         $match: {
@@ -392,24 +358,6 @@ exports.getAllBuyer = async(queryParams) =>{
         }
       }
     }
-    // if (queryParams.isProfileVerified) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       isProfileVerified: JSON.parse(queryParams.isProfileVerified)
-    //     }
-    //   }
-    // }
-    // if (skills) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       $or: [{ 'skills.name': { $in: skills } },
-    //         { 'skills.path': { $in: skills.map(s => { return new RegExp(`,${s},`) }) } }]
-    //     }
-    //   }
-    // }
-
     pipline[matchIndex] = {
       $match: {
         ...pipline[matchIndex].$match,
@@ -417,16 +365,6 @@ exports.getAllBuyer = async(queryParams) =>{
 
       }
     }
-    // if (userType) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       role: userType._id
-
-    //     }
-    //   }
-    // }
-
     let users = await userModel.aggregate([
       {
         $facet: {
@@ -456,11 +394,6 @@ exports.getAllBuyer = async(queryParams) =>{
       }
     ])
     users = JSON.parse(JSON.stringify(users))
-    // if (userType.title === 'Seller' && queryParams.jobCount) {
-    //   for await (const user of users[0].results) {
-    //     user.assignedJobs = await Job.countDocuments({ 'assignedTo.id': user._id, status: ACCEPTED })
-    //   }
-    // }
     return { data: users[0].results, totalCount: users[0].count[0]?.totalCount || 0 }
   } catch (error) {
     throw error
@@ -482,7 +415,6 @@ exports.getAllPendingApprovalSeller = async(queryParams) =>{
       { phone: { $regex: q, $options: 'i' } },
       { country: { $regex: q, $options: 'i' } },
       { address: { $regex: q, $options: 'i' } }
-      // { aboutMe: { $regex: q, $options: 'i' } }
     ]
     const pipline = [
       {
@@ -503,39 +435,12 @@ exports.getAllPendingApprovalSeller = async(queryParams) =>{
         }
       }
     }
-    // if (queryParams.isProfileVerified) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       isProfileVerified: JSON.parse(queryParams.isProfileVerified)
-    //     }
-    //   }
-    // }
     pipline[matchIndex] = {
       $match: {
         ...pipline[matchIndex].$match,
         ispendingApproval: true
       }
     }
-    // if (skills) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       $or: [{ 'skills.name': { $in: skills } },
-    //         { 'skills.path': { $in: skills.map(s => { return new RegExp(`,${s},`) }) } }]
-    //     }
-    //   }
-    // }
-    // if (userType) {
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       role: userType._id
-
-    //     }
-    //   }
-    // }
-
     pipline[matchIndex] = {
       $match: {
         ...pipline[matchIndex].$match,
@@ -573,11 +478,6 @@ exports.getAllPendingApprovalSeller = async(queryParams) =>{
       }
     ])
     users = JSON.parse(JSON.stringify(users))
-    // if (userType.title === 'Seller' && queryParams.jobCount) {
-    //   for await (const user of users[0].results) {
-    //     user.assignedJobs = await Job.countDocuments({ 'assignedTo.id': user._id, status: ACCEPTED })
-    //   }
-    // }
     return { data: users[0].results, totalCount: users[0].count[0]?.totalCount || 0 }
   } catch (error) {
     throw error
@@ -611,10 +511,6 @@ exports.buyerApproved = async(seller_id) =>{
   let seller = await userModel.findById(seller_id);
   seller.isEmailVerified = true;
   seller.save();
-  // const templateAdminHbs = 'seller-approved.hbs'
-  // if (seller.email) {
-  //       sendEmail(seller.email,{fullName: seller.firstName + " " + seller.lastName},`Approved as Seller`, templateAdminHbs)
-  // };
   return seller;
 }
 
@@ -622,9 +518,5 @@ exports.buyerDisapproved = async(seller_id) =>{
   let seller = await userModel.findById(seller_id);
   seller.isEmailVerified = false;
   seller.save();
-  // const templateAdminHbs = 'seller-disapproved.hbs'
-  // if (seller.email) {
-  //       sendEmail(seller.email,{fullName: seller.firstName + " " + seller.lastName},`Rejected as Seller`, templateAdminHbs)
-  // };
   return seller;
 }
