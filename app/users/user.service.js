@@ -137,7 +137,7 @@ exports.userSignUp = async (body, files) => {
           {
             fullName: newUser.firstName + " " + newUser.lastName,
             email: newUser.email,
-            verificationLink: `${process.env.SERVER_URL}user/verify-email/${saved._id}`
+            verificationLink: `${process.env.SERVER_URL}#/verify-email/${saved._id}`
           },
           `Welcome on board ${newUser.firstName + " " + newUser.lastName}`, templateHbs)
       }
@@ -597,7 +597,7 @@ exports.reSendVerificationEmail = async (email) => {
       {
         name: user.firstName + " " +user.lastName,
         role: user.role.title,
-        verificationLink: `${process.env.SERVER_URL}user/verify-email/${user._id}`
+        verificationLink: `${process.env.SERVER_URL}#/verify-email/${user._id}`
       },
       'Email Verification', 'verification-email.hbs')
 
@@ -765,7 +765,7 @@ exports.becomeABuyer = async (id) => {
           {
             fullName: saved.firstName + " " + saved.lastName,
             email: saved.email,
-            verificationLink: `${process.env.SERVER_URL}user/verify-email/${saved._id}`
+            verificationLink: `${process.env.SERVER_URL}#/verify-email/${saved._id}`
           },
           `Welcome on board ${saved.firstName + " " + saved.lastName}`, templateHbs)
       }

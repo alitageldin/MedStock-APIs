@@ -192,7 +192,7 @@ exports.getSellerProducts = async (queryParams) => {
     //   throw error
     // }
    
-    return products[0].results;
+    return products;
   } catch (error) {
     console.log(error);
     throw error
@@ -222,19 +222,19 @@ exports.getSpecificSellerProduct = async (queryParams) => {
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
     
-    if (id) {
+    // if (id) {
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       userId: mongoose.Types.ObjectId(id) 
+    //     }
+    //   }
+    // }
+    if (queryParams.id) {
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
-          userId: mongoose.Types.ObjectId(id) 
-        }
-      }
-    }
-    if (queryParams.sellerProductId) {
-      pipline[matchIndex] = {
-        $match: {
-          ...pipline[matchIndex].$match,
-          _id: mongoose.Types.ObjectId(queryParams.sellerProductId) 
+          _id: mongoose.Types.ObjectId(queryParams.id) 
         }
       }
     }

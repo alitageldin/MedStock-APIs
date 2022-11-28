@@ -117,14 +117,14 @@ router.put('/me', isUser, uploadFile.fields([
   try {
     console.log(req);
     const updatedUser = await updateUser(req, req.body.id)
-    return res.status(SUCCESS).send({ updatedUser })
+    return res.status(SUCCESS).send(updatedUser)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-router.get('/me', isUser, async (req, res) => {
+router.get('/me/:id', isUser, async (req, res) => {
   try {
-    const userProfile = await getMyProfile(req.query.id)
+    const userProfile = await getMyProfile(req.params.id)
     return res.status(SUCCESS).send({ ...userProfile })
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })

@@ -28,7 +28,7 @@ router.post('/create', async (req, res) => {
 
   router.get('/get-user-specific-order', async (req, res) => {
     try {
-      const orders =await orderService.getAllUserOrder(req.query)
+      const orders =await orderService.getUserSpecificOrder(req.query)
       return res.status(SUCCESS).send(orders)
     } catch (error) {
       return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
@@ -46,7 +46,7 @@ router.post('/create', async (req, res) => {
 
   router.get('/get-seller-specific-order', async (req, res) => {
     try {
-      const orders =await orderService.getAllSellerOrder(req.query)
+      const orders =await orderService.getSellerSpecificOrder(req.query)
       return res.status(SUCCESS).send(orders)
     } catch (error) {
       return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
