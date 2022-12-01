@@ -23,6 +23,16 @@ router.get('/get-seller-products', async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+router.get('/search-seller-products', async (req, res) => {
+  try {
+    const products = await productService.searchSellerProducts(req.query)
+    return res.status(SUCCESS).send(products)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
 router.get('/get-seller-specific-product', async (req, res) => {
   try {
     const products = await productService.getSpecificSellerProduct(req.query)

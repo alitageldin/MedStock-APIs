@@ -2,6 +2,8 @@
 const { ErrorHandler } = require('../../helpers/ErrorHandler')
 const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
 const Product = require('./sellerProducts.model')
+const AdminProduct = require('.././products/product.model')
+
 const { validSellerProductSchema } = require('../../helpers/validation.schema')
 const ProductImage = require('./sellerProductImages.model')
 const { default: mongoose } = require('mongoose')
@@ -104,6 +106,131 @@ exports.getSellerProducts = async (queryParams) => {
         }
       }
     }
+    let products = await Product.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'sellerproductimages',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'products',
+                localField: 'productId',
+                foreignField: '_id',
+                as: 'product'
+              }
+            },
+            {
+              $unwind: {
+                path: "$product",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'categoryId',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+    products = JSON.parse(JSON.stringify(products))
+    return products;
+  } catch (error) {
+    throw error
+  }
+}
+
+
+exports.searchSellerProducts = async (queryParams) => {
+  try {
+    const { sortBy } = queryParams
+    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    const id = queryParams.id ? queryParams.id : ''
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 1000
+    const q = queryParams.q ? queryParams.q : ''
+    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+    const query = [{}]
+
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+    
+    if (queryParams.categoryId) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          categoryId: mongoose.Types.ObjectId(queryParams.categoryId) 
+        }
+      }
+    }
+
+    if (id) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          userId: mongoose.Types.ObjectId(id) 
+        }
+      }
+    }
+    if(queryParams.productName){
+      let productIds = await AdminProduct.distinct("_id", { name: { $regex: queryParams.productName, $options: 'i' } })
+      console.log(productIds);
+      if(productIds && productIds.length > 0){
+        pipline[matchIndex] = {
+          // $match: {
+          //   ...pipline[matchIndex].$match,
+          //   _id: mongoose.Types.ObjectId(queryParams.sellerProductId) 
+          // }
+
+          $match: { 
+            ...pipline[matchIndex].$match, 
+            productId: { $in: productIds}
+          }
+        }
+
+        console.log(pipline)
+      }
+    }
+
+    if (queryParams.sellerProductId) {
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          _id: mongoose.Types.ObjectId(queryParams.sellerProductId) 
+        }
+      }
+    }
+    console.log(pipline)
     let products = await Product.aggregate([
       {
         $facet: {
