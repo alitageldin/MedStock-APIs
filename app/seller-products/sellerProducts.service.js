@@ -796,6 +796,11 @@ exports.update = async (id, data) => {
     product.productId = data.productId 
     product.categoryId = data.categoryId
     product.notes = data.notes
+    if(data.isFeatured){
+      product.isFeatured = data.isFeatured
+    }else{
+      product.isFeatured = false;
+    }
     await product.save()
   } catch (error) {
     throw error
@@ -812,7 +817,11 @@ exports.addFeatureProduct = async (id, data) => {
     if (!product) {
       throw ErrorHandler('No product found', NOT_FOUND)
     }
-    product.isFeatured = true;
+    if(product.isFeatured){
+      product.isFeatured = false;
+    }else{
+      product.isFeatured = false;
+    }
     await product.save()
   } catch (error) {
     throw error

@@ -9,7 +9,8 @@ const Product = mongoose.Schema({
     type: String
   },
   imageUrl: {
-    type: String
+    type: String,
+    default: "images/admin-product-images/medical.jpg"
   },
   price: {
     type: Number
