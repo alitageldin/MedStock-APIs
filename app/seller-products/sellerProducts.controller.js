@@ -69,4 +69,51 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+router.get('/get-seller-feature-products', async (req, res) => {
+  try {
+    const products = await productService.getSellerFeatureProduct(req.query)
+    return res.status(SUCCESS).send(products)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+
+router.get('/get-seller-feature-product-count/:id', async (req, res) => {
+  try {
+    const count = await productService.getSellerFeatureProductCount(req.params.id)
+    return res.status(SUCCESS).send(count)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+
+router.put('/add-feature-product/:id', async (req, res) => {
+  try {
+    const updated = await productService.addFeatureProduct(req.params.id, req.body)
+    return res.status(SUCCESS).send(updated)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.get('/get-highly-discount-products', async (req, res) => {
+  try {
+    const products = await productService.getHighlyDiscountProduct(req.query)
+    return res.status(SUCCESS).send(products)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.get('/get-sale-products', async (req, res) => {
+  try {
+    const products = await productService.getSaleProduct(req.query)
+    return res.status(SUCCESS).send(products)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
 module.exports = router

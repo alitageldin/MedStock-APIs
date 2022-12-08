@@ -5,7 +5,9 @@ const Order = require('./order.model')
 const { validOrderDetailSchema } = require('../../helpers/validation.schema')
 const { validOrderSchema } = require('../../helpers/validation.schema')
 const OrderDetails = require('./orderDetail.model')
+const User = require('../users/user.model')
 const { default: mongoose } = require('mongoose')
+const { sendEmail } = require('../emails/mailer')
 
 
 exports.create = async (data) => {
@@ -15,9 +17,12 @@ exports.create = async (data) => {
       order.discount = data.discount;
       order.userId = data.userId;
       order.notes = data.notes;
-      await order.save()
+      await order.save();
+      let sellerIdsList = [];
       if(data && data.orderList.length > 0){
+        let count = await OrderDetails.count();
         await data.orderList.forEach(elem => {
+          count++;
           let orderDetails = new OrderDetails();
           orderDetails.ammount = elem.ammount;
           orderDetails.quantity = elem.quantity;
@@ -27,11 +32,51 @@ exports.create = async (data) => {
           orderDetails.sellerId = elem.sellerId;
           orderDetails.notes = elem.notes;
           orderDetails.orderId = order._id;
+          orderDetails.orderNum = "1000"+count;
+          sellerIdsList.push(elem.sellerId);
           orderDetails.save();
         })
+        const sellers = await User.find({'_id':{$in: sellerIdsList}}).lean();
+        console.log(sellers);
+        if(sellers && sellers.length > 0){
+          sellers.forEach(elem => {
+          const templateHbs = 'order-receive.hbs'
+            if (elem.email && elem.email.length) {
+              sendEmail(elem.email,
+                {
+                  email: elem.email,
+                },
+                `New Order Received`, templateHbs)
+            }
+          })
+        } 
       }
-     
+      
+          
+        //   const templateHbs = 'order-receive.hbs'
+        //   if (seller.email && seller.email.length) {
+        //     sendEmail(seller.email,
+        //       {
+        //         email: seller.email,
+        //       },
+        //       `New Order Received`, templateHbs)
+        //   }
+        // })
       return true;
+    } catch (error) {
+      throw error
+    }
+  }
+
+
+  exports.updateStatusOrder = async (data) => {
+    try {
+      let orderDetails = await  OrderDetails.findById(data.orderId);
+      if(orderDetails){
+        orderDetails.status = data.status;
+        await orderDetails.save();
+      }
+      return orderDetails;
     } catch (error) {
       throw error
     }

@@ -32,6 +32,13 @@ const OrderDetails = mongoose.Schema({
   },
   notes: {
     type: String
+  },
+  status:{
+    type: String,
+    default: 'PROCESSING'
+  },
+  orderNum:{
+    type: String
   }
 }, {
   timestamps: true

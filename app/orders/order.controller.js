@@ -64,7 +64,14 @@ router.post('/create', async (req, res) => {
   })
 
 
-
+  router.put('/update-status-order', async (req, res) => {
+    try {
+      const orderDetails = await orderService.updateStatusOrder(req.body)
+      return res.status(SUCCESS).send(orderDetails)
+    } catch (error) {
+      return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+    }
+  })
 
 
 

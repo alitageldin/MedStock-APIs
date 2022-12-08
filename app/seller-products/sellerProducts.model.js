@@ -30,6 +30,10 @@ const SellerProducts = mongoose.Schema({
   },
   notes: {
     type: String
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

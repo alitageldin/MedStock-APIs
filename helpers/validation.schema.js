@@ -52,6 +52,7 @@ exports.validSellerProductSchema = (data) =>{
     categoryId: Joi.string(),
     userId: Joi.string(),
     productId: Joi.string(),
+    isFeatured: Joi.boolean()
   }).validate(data)
 }
 exports.validOrderSchema = (data) =>{

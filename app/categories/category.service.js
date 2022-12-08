@@ -15,7 +15,7 @@ exports.getAll = async (queryParams) => {
     const query = {
       $or: [{ title: { $regex: q, $options: 'i' } }]
     }
-    const categories = await Category.find(query, {}, { skip: skip, limit: pageSize }).sort({ [sortBy]: order || 1 })
+    const categories = await Category.find(query, {}, { skip: skip, limit: pageSize }).sort({ 'createdAt': order || -1 })
     return categories
   } catch (error) {
     throw error
