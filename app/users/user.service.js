@@ -69,7 +69,7 @@ exports.userLogin = async (body) => {
 }
 exports.userSignUp = async (body, files) => {
   try {
-    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
+    body.profileImage = files?.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
     const { error } = validUserSchemaPost(body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -204,7 +204,7 @@ exports.updateUser = async (req, id) => {
     // adding userType to body for conditional validation
     const { files } = req
     if (files && files.profileImage) {
-      req.body.profileImage = files && files.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
+      req.body.profileImage = files && files.profileImage && files.profileImage.length ? files.profileImage.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
     }
     // removing userType to since it cannot be updated
 

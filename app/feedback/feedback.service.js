@@ -139,7 +139,7 @@ exports.getAllSF = async (queryParams) => {
 
 exports.create = async (data, files) => {
   try {
-    data.imageUrl = files?.feedbackImages && files.feedbackImages.length ? files.feedbackImages.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
+    data.imageUrl = files?.feedbackImages && files.feedbackImages.length ? files.feedbackImages.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
     const { error } = validFeedbackSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)

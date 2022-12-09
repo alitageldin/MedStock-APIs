@@ -63,7 +63,7 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    data.imageUrl = files?.promotionImages && files.promotionImages.length ? files.promotionImages.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
+    data.imageUrl = files?.promotionImages && files.promotionImages.length ? files.promotionImages.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
     const { error } = validPromotionSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -79,7 +79,7 @@ exports.create = async (data, files) => {
 }
 exports.update = async (id, req, files) => {
   try {
-    req.body.imageUrl = files?.promotionImages && files.promotionImages.length ? files.promotionImages.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
+    req.body.imageUrl = files?.promotionImages && files.promotionImages.length ? files.promotionImages.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
     const { error } = validPromotionSchema(req.body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)

@@ -759,7 +759,7 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('/uploads','') }) : undefined
+    const productImages = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('uploads','') }) : undefined
     const { error } = validSellerProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)

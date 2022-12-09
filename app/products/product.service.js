@@ -222,7 +222,7 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    data.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
+    data.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
     const { error } = validProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
@@ -236,7 +236,7 @@ exports.create = async (data, files) => {
 }
 exports.update = async (id, req, files) => {
   try {
-    req.body.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
+    req.body.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
     const { error } = validProductSchema(req.body)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
