@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const { isDate } = require('moment')
 const { CLIENT, FREELANCER } = require('./constants')
 
 exports.validRoleSchema = (data) => {
@@ -52,7 +53,19 @@ exports.validSellerProductSchema = (data) =>{
     categoryId: Joi.string(),
     userId: Joi.string(),
     productId: Joi.string(),
-    isFeatured: Joi.boolean()
+    isFeatured: Joi.boolean(),
+    isDeleted: Joi.boolean
+  }).validate(data)
+}
+exports.validUpdateSellerProductSchema = (data) =>{
+  return Joi.object({
+    price: Joi.string(),
+    discount: Joi.number(),
+    quantity: Joi.number(),
+    expiryDate : Joi.date(),
+    notes : Joi.string(),
+    isFeatured: Joi.boolean(),
+    isDeleted: Joi.boolean
   }).validate(data)
 }
 exports.validOrderSchema = (data) =>{

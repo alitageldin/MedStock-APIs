@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 })
 router.post('/searchProduct', async (req, res) => {
   try {
-    const products = await productService.searchProduct(req.body)
+    const products = await productService.searchProduct(req.body,req.query)
     return res.status(SUCCESS).send(products)
   } catch (error) {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })

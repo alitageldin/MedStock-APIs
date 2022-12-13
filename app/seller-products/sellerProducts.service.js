@@ -4,7 +4,7 @@ const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
 const Product = require('./sellerProducts.model')
 const AdminProduct = require('.././products/product.model')
 
-const { validSellerProductSchema } = require('../../helpers/validation.schema')
+const { validSellerProductSchema, validUpdateSellerProductSchema } = require('../../helpers/validation.schema')
 const ProductImage = require('./sellerProductImages.model')
 const { default: mongoose } = require('mongoose')
 
@@ -19,6 +19,12 @@ exports.getAll = async (id) => {
       }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isDeleted: false
+      }
+    }
     let products = await Product.aggregate([
       {
         $facet: {
@@ -89,7 +95,12 @@ exports.getSellerProducts = async (queryParams) => {
       { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
-    
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isDeleted: false
+      }
+    }
     if (id) {
       pipline[matchIndex] = {
         $match: {
@@ -184,7 +195,12 @@ exports.searchSellerProducts = async (queryParams) => {
       { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
-    
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isDeleted: false
+      }
+    }
     if (queryParams.categoryId) {
       pipline[matchIndex] = {
         $match: {
@@ -394,7 +410,12 @@ exports.getSellerFeatureProduct = async (queryParams) => {
       { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
-    
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isDeleted: false
+      }
+    }
     if (queryParams.categoryId) {
       pipline[matchIndex] = {
         $match: {
@@ -505,7 +526,7 @@ exports.getSellerFeatureProduct = async (queryParams) => {
 
 exports.getSellerFeatureProductCount = async (id) => {
   try {
-    let count = await Product.find({'userId':id,'isFeatured': true}).count()
+    let count = await Product.find({'userId':id,'isFeatured': true, 'isDeleted': false}).count()
     return {'totalFeatureProduct': count};
   } catch (error) {
     return 0;
@@ -536,7 +557,12 @@ exports.getHighlyDiscountProduct = async (queryParams) => {
       { $sort: { 'discount': order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
-    
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isDeleted: false
+      }
+    }
     if (queryParams.categoryId) {
       pipline[matchIndex] = {
         $match: {
@@ -651,7 +677,12 @@ exports.getSaleProduct = async (queryParams) => {
       { $sort: { 'createdAt': order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
-    
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isDeleted: false
+      }
+    }
     if (queryParams.categoryId) {
       pipline[matchIndex] = {
         $match: {
@@ -781,10 +812,11 @@ exports.create = async (data, files) => {
 }
 exports.update = async (id, data) => {
   try {
-    const { error } = validSellerProductSchema(data)
-    if (error) {
-      throw ErrorHandler(error.message, BAD_REQUEST)
-    }
+    // const { error } = validUpdateSellerProductSchema(data)
+    // if (error) {
+    //   throw ErrorHandler(error.message, BAD_REQUEST)
+    // }
+    console.log(data);
     const product = await Product.findById(id)
     if (!product) {
       throw ErrorHandler('No product found', NOT_FOUND)
@@ -793,13 +825,17 @@ exports.update = async (id, data) => {
     product.discount = data.discount
     product.price = data.price
     product.expiryDate = data.expiryDate
-    product.productId = data.productId 
-    product.categoryId = data.categoryId
+    // product.productId = data.productId 
+    // product.categoryId = data.categoryId
     product.notes = data.notes
     if(data.isFeatured){
-      product.isFeatured = data.isFeatured
+      product.isFeatured = data.isFeatured;
     }else{
       product.isFeatured = false;
+    }
+
+    if(data.isDeleted){
+      product.isDeleted = data.isDeleted;
     }
     await product.save()
   } catch (error) {
@@ -820,7 +856,7 @@ exports.addFeatureProduct = async (id, data) => {
     if(product.isFeatured){
       product.isFeatured = false;
     }else{
-      product.isFeatured = false;
+      product.isFeatured = true;
     }
     await product.save()
   } catch (error) {
@@ -832,8 +868,11 @@ exports.delete = async (id) => {
     if (!id) {
       throw ErrorHandler('id is required', BAD_REQUEST)
     }
-    const result = await Product.findByIdAndDelete(id)
-    if (!result) {
+    const result = await Product.findById(id)
+    if(result){
+      result.isDeleted = true;
+      await result.save();
+    } else{
       throw ErrorHandler('Product not found', NOT_FOUND)
     }
     return result

@@ -54,6 +54,7 @@ router.post('/',uploadFile.fields([
 
 router.put('/:id', async (req, res) => {
   try {
+    console.log(req.body);
     const updated = await productService.update(req.params.id, req.body)
     return res.status(CREATED).send(updated)
   } catch (error) {

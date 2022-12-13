@@ -108,15 +108,26 @@ exports.searchProduct1 = async (body) => {
 }
 
 
-exports.searchProduct = async (body) => {
+exports.searchProduct = async (body, queryParams) => {
   try {
+    const { sortBy } = queryParams
+    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
+    const q = queryParams.q ? queryParams.q : ''
+    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
     const query = [{ name: { $regex: body.productName, $options: 'i' } }]
+
+
     const pipline = [
       {
         $match: {
           $or: query
         }
-      }
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
     if (body.categoryId) {
@@ -154,7 +165,7 @@ exports.searchProduct = async (body) => {
       }
     ])
     products = JSON.parse(JSON.stringify(products))
-    return products[0].results;
+    return products;
   } catch (error) {
     throw error
   }
@@ -222,7 +233,7 @@ exports.getById = async (id) => {
 }
 exports.create = async (data, files) => {
   try {
-    data.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('uploads','') })[0] : undefined
+    data.imageUrl = files?.productImages && files.productImages.length ? files.productImages.map(item => { return `${item.path}`.replace('/uploads','') })[0] : undefined
     const { error } = validProductSchema(data)
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
