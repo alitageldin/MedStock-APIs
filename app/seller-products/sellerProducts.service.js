@@ -880,3 +880,124 @@ exports.delete = async (id) => {
     throw error
   }
 }
+
+exports.getFilteredSellerProducts = async (queryParams, body) => {
+  try {
+    const sortBy = body.sortBy;
+    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 1000
+    const order = body.orderBy && body.orderBy === 'desc' ? -1 : 1
+    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+    const query = [{}]
+
+    const pipline = [
+      {
+        $match: {
+          $or: query
+        }
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      { $sort: { [sortBy]: order } }
+    ]
+    const matchIndex = pipline.findIndex(aq => aq.$match)
+    pipline[matchIndex] = {
+      $match: {
+        ...pipline[matchIndex].$match,
+        isDeleted: false
+      }
+    }
+    if(body.price){
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          price: { $gte: body.price[0], $lte: body.price[1] } 
+        }
+      }
+    }
+    if(body.discount){
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          discount: { $gte: body.discount} 
+        }
+      }
+    }
+    // if(body.expiryDate){
+    //   pipline[matchIndex] = {
+    //     $match: {
+    //       ...pipline[matchIndex].$match,
+    //       expiryDate: { $lte: body.expiryDate} 
+    //     }
+    //   }
+    // }
+    if(body.categories && body.categories.length > 0){
+      let categoryIds = [];
+      for(let index=0; index < body.categories.length; index++){
+        categoryIds.push(mongoose.Types.ObjectId(body.categories[index]));
+      }
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          categoryId: { $in: categoryIds}
+        }
+      }
+    }
+    console.log(pipline);
+    console.log(body);
+
+    let products = await Product.aggregate([
+      {
+        $facet: {
+          results: [
+            {
+              $lookup: {
+                from: 'sellerproductimages',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'products',
+                localField: 'productId',
+                foreignField: '_id',
+                as: 'product'
+              }
+            },
+            {
+              $unwind: {
+                path: "$product",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'categoryId',
+                foreignField: '_id',
+                as: 'category'
+              }
+            },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            ...pipline
+          ],
+          count: [
+            { $match: { ...pipline[matchIndex].$match } },
+            { $count: 'totalCount' }]
+        }
+      }
+    ])
+    products = JSON.parse(JSON.stringify(products))
+    return products;
+  } catch (error) {
+    throw error
+  }
+}
+

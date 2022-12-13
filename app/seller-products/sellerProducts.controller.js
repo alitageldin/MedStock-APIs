@@ -117,4 +117,14 @@ router.get('/get-sale-products', async (req, res) => {
   }
 })
 
+router.post('/get-filter-seller-products', async (req, res) => {
+  try {
+    const products = await productService.getFilteredSellerProducts(req.query, req.body)
+    return res.status(SUCCESS).send(products)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+
 module.exports = router
