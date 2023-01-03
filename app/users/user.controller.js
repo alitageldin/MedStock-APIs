@@ -20,7 +20,12 @@ const {
   getMyProfile,
   getTopClients,
   becomeASeller,
-  becomeABuyer
+  becomeABuyer,
+  exportApprovedSeller,
+  exportRejectedSeller,
+  exportPendingApprovalSeller,
+  exportApprovedBuyer,
+  exportPendingVerificationBuyer
 } = require('./user.service')
 const router = express.Router()
 const multer = require('multer')
@@ -145,6 +150,61 @@ router.get('/', isAdmin, async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+router.get('/export-approved-seller', async (req, res) => {
+  try {
+    const data = await exportApprovedSeller(req,res)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.get('/export-rejected-seller', async (req, res) => {
+  try {
+    const data = await exportRejectedSeller(req,res)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.get('/export-pending-approval-seller', async (req, res) => {
+  try {
+    const data = await exportPendingApprovalSeller(req,res)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+
+router.get('/export-approved-buyer', async (req, res) => {
+  try {
+    const data = await exportApprovedBuyer(req,res)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+router.get('/export-pending-verification-buyer', async (req, res) => {
+  try {
+    const data = await exportPendingVerificationBuyer(req,res)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+// router.get('/export-pending-verification-buyer', async (req, res) => {
+//   try {
+//     const data = await exportPendingVerificationBuyer(req,res)
+//     return res.status(SUCCESS).send(data)
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+
 router.get('/:id', isAdmin, async (req, res) => {
   try {
     const data = await getById(req.params.id)
@@ -153,6 +213,9 @@ router.get('/:id', isAdmin, async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+
+
 router.delete('/:id', isAdmin, async (req, res) => {
   try {
     await deleteUser(req.params.id)
@@ -203,5 +266,8 @@ router.get('/clients/top', isAdmin, async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+
+
 
 module.exports = router

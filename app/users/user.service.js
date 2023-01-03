@@ -13,6 +13,7 @@ const unlinkAsync = promisify(fs.unlink)
 const moment = require('moment')
 const Roles = require('../../app/roles/role.model')
 const Admin = require('../admin/admin.model')
+const excelJS = require("exceljs");
 
 exports.userLogin = async (body) => {
   try {
@@ -241,13 +242,21 @@ exports.updateUser = async (req, id) => {
 }
 exports.getMyProfile = async (id) => {
   try {
-    const user = await User.findById(id).lean()
+    const user = await User.findById(id)
+
     if (!user) {
       throw ErrorHandler('No Associated Account Found.', BAD_REQUEST)
     }
-    delete user.password
-
-    return user
+    if(!user.viewedCount){
+      user.viewedCount = 1;
+    }else{
+      user.viewedCount = user.viewedCount + 1;
+    }
+    await user.save();
+    const userGet = await User.findById(id).lean()
+    delete userGet.password;
+    
+    return userGet
   } catch (error) {
     throw error
   }
@@ -637,3 +646,286 @@ exports.becomeABuyer = async (id) => {
     throw error
   }
 }
+
+exports.exportApprovedSeller = async (req, res) => {
+  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const worksheet = workbook.addWorksheet("Approved Seller"); // New Worksheet
+  const path = "./files";  // Path to download excel
+  // Column for data in excel. key must match data key
+  worksheet.columns = [
+    { header: "S no.", key: "s_no", width: 10 }, 
+    { header: "First Name", key: "firstName", width: 30 },
+    { header: "Last Name", key: "lastName", width: 30 },
+    { header: "Email Id", key: "email", width: 50 },
+    { header: "Pharmacy Name", key: "pharmacyName", width: 30 },
+    { header: "Business Id", key: "businessId", width: 30 }
+];
+// Looping through User data
+let users = await User.find({'isSeller': true});
+let counter = 1;
+users.forEach((user) => {
+  user.s_no = counter;
+  worksheet.addRow(user); // Add data in worksheet
+  counter++;
+});
+// Making first line in excel bold
+worksheet.getRow(1).eachCell((cell) => {
+  cell.font = { bold: true };
+});
+  try {
+    const data = await workbook.xlsx.writeFile(`${path}/users.xlsx`);
+    console.log(data);
+    let response = {
+      path: `files/users.xlsx`,
+    };
+    return response;
+
+    // .then(() => {
+    //   console.log(`${path}/users.xlsx`);
+    //   let response = {
+    //       path: `${path}/users.xlsx`,
+    //     };
+    //   return response;
+    // });
+  } catch (err) {
+      return {
+          message: err,
+        }
+    }
+};
+
+
+exports.exportApprovedSeller = async (req, res) => {
+  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const worksheet = workbook.addWorksheet("Approved Seller"); // New Worksheet
+  const path = "./uploads/files";  // Path to download excel
+  // Column for data in excel. key must match data key
+  worksheet.columns = [
+    { header: "S no.", key: "s_no", width: 10 }, 
+    { header: "First Name", key: "firstName", width: 30 },
+    { header: "Last Name", key: "lastName", width: 30 },
+    { header: "Email Id", key: "email", width: 50 },
+    { header: "Pharmacy Name", key: "pharmacyName", width: 30 },
+    { header: "Business Id", key: "businessId", width: 30 }
+];
+// Looping through User data
+let users = await User.find({'isSeller': true, 'isProfileVerified': true});
+let counter = 1;
+users.forEach((user) => {
+  user.s_no = counter;
+  worksheet.addRow(user); // Add data in worksheet
+  counter++;
+});
+// Making first line in excel bold
+worksheet.getRow(1).eachCell((cell) => {
+  cell.font = { bold: true };
+});
+  try {
+    const data = await workbook.xlsx.writeFile(`${path}/approvedSeller.xlsx`);
+    console.log(data);
+    let response = {
+      path: `files/approvedSeller.xlsx`,
+    };
+    return response;
+
+    // .then(() => {
+    //   console.log(`${path}/users.xlsx`);
+    //   let response = {
+    //       path: `${path}/users.xlsx`,
+    //     };
+    //   return response;
+    // });
+  } catch (err) {
+      return {
+          message: err,
+        }
+    }
+};
+
+exports.exportRejectedSeller = async (req, res) => {
+  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const worksheet = workbook.addWorksheet("Rejected Seller"); // New Worksheet
+  const path = "./uploads/files";  // Path to download excel
+  // Column for data in excel. key must match data key
+  worksheet.columns = [
+    { header: "S no.", key: "s_no", width: 10 }, 
+    { header: "First Name", key: "firstName", width: 30 },
+    { header: "Last Name", key: "lastName", width: 30 },
+    { header: "Email Id", key: "email", width: 50 },
+    { header: "Pharmacy Name", key: "pharmacyName", width: 30 },
+    { header: "Business Id", key: "businessId", width: 30 }
+];
+// Looping through User data
+let users = await User.find({'isSeller': true, 'isProfileVerified': false});
+let counter = 1;
+users.forEach((user) => {
+  user.s_no = counter;
+  worksheet.addRow(user); // Add data in worksheet
+  counter++;
+});
+// Making first line in excel bold
+worksheet.getRow(1).eachCell((cell) => {
+  cell.font = { bold: true };
+});
+  try {
+    const data = await workbook.xlsx.writeFile(`${path}/rejectedSeller.xlsx`);
+    console.log(data);
+    let response = {
+      path: `files/rejectedSeller.xlsx`,
+    };
+    return response;
+
+    // .then(() => {
+    //   console.log(`${path}/users.xlsx`);
+    //   let response = {
+    //       path: `${path}/users.xlsx`,
+    //     };
+    //   return response;
+    // });
+  } catch (err) {
+      return {
+          message: err,
+        }
+    }
+};
+
+
+exports.exportPendingApprovalSeller = async (req, res) => {
+  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const worksheet = workbook.addWorksheet("Pending Approval Seller"); // New Worksheet
+  const path = "./uploads/files";  // Path to download excel
+  // Column for data in excel. key must match data key
+  worksheet.columns = [
+    { header: "S no.", key: "s_no", width: 10 }, 
+    { header: "First Name", key: "firstName", width: 30 },
+    { header: "Last Name", key: "lastName", width: 30 },
+    { header: "Email Id", key: "email", width: 50 },
+    { header: "Pharmacy Name", key: "pharmacyName", width: 30 },
+    { header: "Business Id", key: "businessId", width: 30 }
+];
+// Looping through User data
+let users = await User.find({'isSeller': true, 'ispendingApproval': true});
+let counter = 1;
+users.forEach((user) => {
+  user.s_no = counter;
+  worksheet.addRow(user); // Add data in worksheet
+  counter++;
+});
+// Making first line in excel bold
+worksheet.getRow(1).eachCell((cell) => {
+  cell.font = { bold: true };
+});
+  try {
+    const data = await workbook.xlsx.writeFile(`${path}/pendingApprovalSeller.xlsx`);
+    console.log(data);
+    let response = {
+      path: `files/pendingApprovalSeller.xlsx`,
+    };
+    return response;
+
+    // .then(() => {
+    //   console.log(`${path}/users.xlsx`);
+    //   let response = {
+    //       path: `${path}/users.xlsx`,
+    //     };
+    //   return response;
+    // });
+  } catch (err) {
+      return {
+          message: err,
+        }
+    }
+};
+
+
+exports.exportApprovedBuyer = async (req, res) => {
+  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const worksheet = workbook.addWorksheet("Approved Buyer"); // New Worksheet
+  const path = "./uploads/files";  // Path to download excel
+  // Column for data in excel. key must match data key
+  worksheet.columns = [
+    { header: "S no.", key: "s_no", width: 10 }, 
+    { header: "First Name", key: "firstName", width: 30 },
+    { header: "Last Name", key: "lastName", width: 30 },
+    { header: "Email Id", key: "email", width: 50 },
+    { header: "Pharmacy Name", key: "pharmacyName", width: 30 },
+    { header: "Business Id", key: "businessId", width: 30 }
+];
+// Looping through User data
+let users = await User.find({'isBuyer': true, 'isEmailVerified': true});
+let counter = 1;
+users.forEach((user) => {
+  user.s_no = counter;
+  worksheet.addRow(user); // Add data in worksheet
+  counter++;
+});
+// Making first line in excel bold
+worksheet.getRow(1).eachCell((cell) => {
+  cell.font = { bold: true };
+});
+  try {
+    const data = await workbook.xlsx.writeFile(`${path}/approvedBuyer.xlsx`);
+    console.log(data);
+    let response = {
+      path: `files/approvedBuyer.xlsx`,
+    };
+    return response;
+
+    // .then(() => {
+    //   console.log(`${path}/users.xlsx`);
+    //   let response = {
+    //       path: `${path}/users.xlsx`,
+    //     };
+    //   return response;
+    // });
+  } catch (err) {
+      return {
+          message: err,
+        }
+    }
+};
+
+exports.exportPendingVerificationBuyer = async (req, res) => {
+  const workbook = new excelJS.Workbook();  // Create a new workbook
+  const worksheet = workbook.addWorksheet("Pending Verification Buyer"); // New Worksheet
+  const path = "./uploads/files";  // Path to download excel
+  // Column for data in excel. key must match data key
+  worksheet.columns = [
+    { header: "S no.", key: "s_no", width: 10 }, 
+    { header: "First Name", key: "firstName", width: 30 },
+    { header: "Last Name", key: "lastName", width: 30 },
+    { header: "Email Id", key: "email", width: 50 },
+];
+// Looping through User data
+let users = await User.find({'isBuyer': true, 'isEmailVerified': false});
+let counter = 1;
+users.forEach((user) => {
+  user.s_no = counter;
+  worksheet.addRow(user); // Add data in worksheet
+  counter++;
+});
+// Making first line in excel bold
+worksheet.getRow(1).eachCell((cell) => {
+  cell.font = { bold: true };
+});
+  try {
+    const data = await workbook.xlsx.writeFile(`${path}/pendingVerifyBuyer.xlsx`);
+    console.log(data);
+    let response = {
+      path: `files/pendingVerifyBuyer.xlsx`,
+    };
+    return response;
+
+    // .then(() => {
+    //   console.log(`${path}/users.xlsx`);
+    //   let response = {
+    //       path: `${path}/users.xlsx`,
+    //     };
+    //   return response;
+    // });
+  } catch (err) {
+      return {
+          message: err,
+        }
+    }
+};

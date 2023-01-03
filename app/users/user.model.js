@@ -121,6 +121,9 @@ const User = mongoose.Schema({
   {
     number: String,
     expiry: Date
+  },
+  viewedCount:{
+    type: Number
   }
 
 }, {

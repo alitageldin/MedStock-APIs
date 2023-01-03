@@ -11,6 +11,9 @@ const SellerProducts = mongoose.Schema({
   quantity: {
     type: Number
   },
+  remainingQuantity: {
+    type: Number
+  },
   discount: {
     type: Number
   },
@@ -38,6 +41,10 @@ const SellerProducts = mongoose.Schema({
   isDeleted: {
     type: Boolean,
     default: false
+  },
+  viewedCount:{
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

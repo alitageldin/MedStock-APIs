@@ -325,6 +325,15 @@ exports.getSpecificSellerProduct = async (queryParams) => {
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
     if (queryParams.id) {
+      let sellerProduct = await sellerProduct.findById(queryParams.id);
+      if(sellerProduct){
+        if(!sellerProduct.viewedCount){
+          sellerProduct.viewedCount = 1;
+        }else{
+          sellerProduct.viewedCount = sellerProduct.viewedCount + 1;
+        }
+        sellerProduct.save();
+      }
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
@@ -795,6 +804,9 @@ exports.create = async (data, files) => {
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
     }
+    if(!data.remainingQuantity){
+      data.remainingQuantity = data.quantity;
+    }
     const product = new Product(data)
     await product.save()
     if(productImages && productImages.length > 0){
@@ -822,6 +834,9 @@ exports.update = async (id, data) => {
       throw ErrorHandler('No product found', NOT_FOUND)
     }
     product.quantity = data.quantity
+    if(data.remainingQuantity){
+      product.remainingQuantity = data.remainingQuantity;
+    }
     product.discount = data.discount
     product.price = data.price
     product.expiryDate = data.expiryDate

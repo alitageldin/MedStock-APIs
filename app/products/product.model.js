@@ -1,3 +1,4 @@
+const { boolean } = require('joi')
 const mongoose = require('mongoose')
 
 const Product = mongoose.Schema({
@@ -21,6 +22,10 @@ const Product = mongoose.Schema({
   },
   description: {
     type: String
+  },
+  isDeleted:{
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

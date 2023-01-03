@@ -17,6 +17,17 @@ const storage = multer.diskStorage({
 const uploadFile = multer({ dest: 'uploads/images/product-images/', storage: storage })
 
 
+
+router.get('/export-products', async (req, res) => {
+  try {
+    const data = await productService.exportProducts(req.query,res)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
+
 router.get('/', async (req, res) => {
   try {
     const products = await productService.getAll(req.query)

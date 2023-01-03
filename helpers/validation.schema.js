@@ -54,7 +54,8 @@ exports.validSellerProductSchema = (data) =>{
     userId: Joi.string(),
     productId: Joi.string(),
     isFeatured: Joi.boolean(),
-    isDeleted: Joi.boolean
+    isDeleted: Joi.boolean,
+    viewedCount: Joi.number(),
   }).validate(data)
 }
 exports.validUpdateSellerProductSchema = (data) =>{
@@ -120,7 +121,8 @@ exports.validUserSchemaPost = (user) => {
     isSeller: Joi.boolean(),
     isBuyer: Joi.boolean(),
     selectedProfile: Joi.string(),
-    city: Joi.string()
+    city: Joi.string(),
+    viewedCount: Joi.number()
   }).validate(user)
 }
 exports.validUserSchemaPut = (user) => {

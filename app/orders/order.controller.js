@@ -75,6 +75,16 @@ router.post('/create', async (req, res) => {
 
 
 
+  router.get('/export-orders', async (req, res) => {
+    try {
+      const data = await orderService.exportOrders(req.query,res)
+      return res.status(SUCCESS).send(data)
+    } catch (error) {
+      return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+    }
+  })
+  
+
 
 
 
