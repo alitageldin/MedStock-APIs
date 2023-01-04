@@ -39,6 +39,14 @@ exports.getAll = async (id) => {
             },
             {
               $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
+              }
+            },
+            {
+              $lookup: {
                 from: 'products',
                 localField: 'productId',
                 foreignField: '_id',
@@ -127,6 +135,14 @@ exports.getSellerProducts = async (queryParams) => {
                 localField: '_id',
                 foreignField: 'sellerProductId',
                 as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
               }
             },
             {
@@ -261,6 +277,14 @@ exports.searchSellerProducts = async (queryParams) => {
             },
             {
               $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
+              }
+            },
+            {
+              $lookup: {
                 from: 'products',
                 localField: 'productId',
                 foreignField: '_id',
@@ -355,6 +379,14 @@ exports.getSpecificSellerProduct = async (queryParams) => {
             },
             {
               $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
+              }
+            },
+            {
+              $lookup: {
                 from: 'products',
                 localField: 'productId',
                 foreignField: '_id',
@@ -396,6 +428,27 @@ exports.getSpecificSellerProduct = async (queryParams) => {
   }
 }
 
+
+exports.updateSellerProductViewdCount = async (id) => {
+  try {
+    console.log(id);
+    if (id) {
+      let sellerProduct = await Product.findById(id);
+      console.log(sellerProduct);
+      if(sellerProduct){
+        if(!sellerProduct.viewedCount){
+          sellerProduct.viewedCount = 1;
+        }else{
+          sellerProduct.viewedCount = sellerProduct.viewedCount + 1;
+        }
+        sellerProduct.save();
+      }
+      return sellerProduct;
+    }
+  } catch (error) {
+    return {};
+  }
+}
 
 exports.getSellerFeatureProduct = async (queryParams) => {
   try {
@@ -487,6 +540,14 @@ exports.getSellerFeatureProduct = async (queryParams) => {
                 localField: '_id',
                 foreignField: 'sellerProductId',
                 as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
               }
             },
             {
@@ -623,6 +684,14 @@ exports.getHighlyDiscountProduct = async (queryParams) => {
             },
             {
               $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
+              }
+            },
+            {
+              $lookup: {
                 from: 'products',
                 localField: 'productId',
                 foreignField: '_id',
@@ -739,6 +808,14 @@ exports.getSaleProduct = async (queryParams) => {
                 localField: '_id',
                 foreignField: 'sellerProductId',
                 as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
               }
             },
             {
@@ -971,6 +1048,14 @@ exports.getFilteredSellerProducts = async (queryParams, body) => {
                 localField: '_id',
                 foreignField: 'sellerProductId',
                 as: 'productImages'
+              }
+            },
+            {
+              $lookup: {
+                from: 'ratings',
+                localField: '_id',
+                foreignField: 'sellerProductId',
+                as: 'ratings'
               }
             },
             {

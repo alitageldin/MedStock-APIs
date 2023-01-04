@@ -41,6 +41,15 @@ router.get('/get-seller-specific-product', async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+router.get('/update-view-count/:id', async (req, res) => {
+  try {
+    const products = await productService.updateSellerProductViewdCount(req.params.id)
+    return res.status(SUCCESS).send(products)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
 router.post('/',uploadFile.fields([
   { name: 'productImages', maxCount: 10 }
 ]), async (req, res) => {

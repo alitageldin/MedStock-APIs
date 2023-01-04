@@ -30,6 +30,30 @@ exports.validPromotionSchema = (data) =>{
     title: Joi.string(),
     description : Joi.string(),
     imageUrl : Joi.string(),
+    type: Joi.string(),
+    videoLink : Joi.string(),
+    categoryId : Joi.string(),
+    productId: Joi.string()
+  }).validate(data)
+}
+
+exports.validRefundsSchema = (data) =>{
+  return Joi.object({
+    reason : Joi.string(),
+    sellerProductId : Joi.string(),
+    userId : Joi.string(),
+    orderId: Joi.string()
+  }).validate(data)
+}
+
+exports.validRatingSchema = (data) =>{
+  return Joi.object({
+    description : Joi.string(),
+    sellerProductId : Joi.string(),
+    userId : Joi.string(),
+    orderId: Joi.string(),
+    ratingCount: Joi.number(),
+    userName: Joi.string()
   }).validate(data)
 }
 

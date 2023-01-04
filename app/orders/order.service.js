@@ -92,6 +92,9 @@ exports.create = async (data) => {
       let orderDetails = await  OrderDetails.findById(data.orderId);
       if(orderDetails){
         orderDetails.status = data.status;
+        if(data.status==='CANCEL'){
+          orderDetails.remainingQuantity =  orderDetails.remainingQuantity + data.remainingQuantity;
+        }
         await orderDetails.save();
       }
       return orderDetails;

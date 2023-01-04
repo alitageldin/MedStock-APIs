@@ -91,6 +91,10 @@ exports.update = async (id, req, files) => {
     promotion.title = req.body.title ? req.body.title : promotion.title;
     promotion.description = req.body.description ? req.body.description : promotion.description
     promotion.imageUrl = req.body.imageUrl? req.body.imageUrl: promotion.imageUrl;
+    promotion.type = req.body.type ? req.body.type : promotion.type;
+    promotion.videoLink = req.body.videoLink ? req.body.videoLink : promotion.videoLink
+    promotion.categoryId = req.body.categoryId? req.body.categoryId: promotion.categoryId;
+    promotion.productId = req.body.productId? req.body.productId: promotion.productId;
     await promotion.save()
   } catch (error) {
     throw error

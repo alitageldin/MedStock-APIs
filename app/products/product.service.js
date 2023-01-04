@@ -125,12 +125,14 @@ exports.searchProduct1 = async (body) => {
 
 exports.searchProduct = async (body, queryParams) => {
   try {
+    console.log(body);
     const sortBy = body.sortBy;
     const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
     const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
     const order = body.orderBy && body.orderBy === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    const query = [{ name: { $regex: body.productName, $options: 'i' } }]
+    const query = [{ name: { $regex: body.productName, $options: 'i' },  sku: { $regex: body.sku, $options: 'i' } }
+   ]
 
     const pipline = [
       {
@@ -161,7 +163,7 @@ exports.searchProduct = async (body, queryParams) => {
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,
-          price: { $gte: body.price[0], $lte: body.price[1] } 
+          price: { $lte: body.price} 
         }
       }
     }
@@ -169,7 +171,7 @@ exports.searchProduct = async (body, queryParams) => {
     if(body.categories && body.categories.length > 0){
       let categoryIds = [];
       for(let index=0; index < body.categories.length; index++){
-        categoryIds.push(mongoose.Types.ObjectId(body.categories[index]));
+        categoryIds.push(mongoose.Types.ObjectId(body.categories[index]._id));
       }
       pipline[matchIndex] = {
         $match: {
