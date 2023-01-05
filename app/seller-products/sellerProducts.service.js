@@ -349,15 +349,15 @@ exports.getSpecificSellerProduct = async (queryParams) => {
     ]
     const matchIndex = pipline.findIndex(aq => aq.$match)
     if (queryParams.id) {
-      let sellerProduct = await sellerProduct.findById(queryParams.id);
-      if(sellerProduct){
-        if(!sellerProduct.viewedCount){
-          sellerProduct.viewedCount = 1;
-        }else{
-          sellerProduct.viewedCount = sellerProduct.viewedCount + 1;
-        }
-        sellerProduct.save();
-      }
+      // let sellerProduct = await sellerProduct.findById(queryParams.id);
+      // if(sellerProduct){
+      //   if(!sellerProduct.viewedCount){
+      //     sellerProduct.viewedCount = 1;
+      //   }else{
+      //     sellerProduct.viewedCount = sellerProduct.viewedCount + 1;
+      //   }
+      //   sellerProduct.save();
+      // }
       pipline[matchIndex] = {
         $match: {
           ...pipline[matchIndex].$match,

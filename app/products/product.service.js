@@ -131,9 +131,15 @@ exports.searchProduct = async (body, queryParams) => {
     const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
     const order = body.orderBy && body.orderBy === 'desc' ? -1 : 1
     const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    const query = [{ name: { $regex: body.productName, $options: 'i' },  sku: { $regex: body.sku, $options: 'i' } }
-   ]
-
+    let query = "";
+    if(body.productName){
+      query = [{ name: { $regex: body.productName, $options: 'i'}}]
+    }if(body.sku && body.productName){
+      query = [{ name: { $regex: body.productName, $options: 'i'},  sku: { $regex: body.sku, $options: 'i'}}]
+    }if(body.sku){
+      query = [{sku: { $regex: body.sku, $options: 'i'}}]
+    }
+    
     const pipline = [
       {
         $match: {
