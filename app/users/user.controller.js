@@ -25,7 +25,8 @@ const {
   exportRejectedSeller,
   exportPendingApprovalSeller,
   exportApprovedBuyer,
-  exportPendingVerificationBuyer
+  exportPendingVerificationBuyer,
+  uploadLegalDocument
 } = require('./user.service')
 const router = express.Router()
 const multer = require('multer')
@@ -40,7 +41,16 @@ const storage = multer.diskStorage({
   }
 })
 
+const storageLegalDocument = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/document/seller-legal-document')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '.' + file.originalname) // mime type gives ext of file
+  }
+})
 const uploadFile = multer({ dest: 'uploads/images/user-profile/', storage: storage })
+const uploadLegalDoc = multer({ dest: 'uploads/document/seller-legal-document/', storage: storageLegalDocument })
 
 /*
  *
@@ -186,7 +196,17 @@ router.get('/export-approved-buyer', async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
-
+router.post('/upload-legal-document',uploadLegalDoc.fields([
+  { name: 'legalDocument', maxCount: 10 }
+]), async (req, res) => {
+  try {
+    console.log(req);
+    const data = await uploadLegalDocument(req.body, req.files)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
 router.get('/export-pending-verification-buyer', async (req, res) => {
   try {
     const data = await exportPendingVerificationBuyer(req,res)

@@ -146,7 +146,8 @@ exports.validUserSchemaPost = (user) => {
     isBuyer: Joi.boolean(),
     selectedProfile: Joi.string(),
     city: Joi.string(),
-    viewedCount: Joi.number()
+    viewedCount: Joi.number(),
+    legalDocument: Joi.string()
   }).validate(user)
 }
 exports.validUserSchemaPut = (user) => {

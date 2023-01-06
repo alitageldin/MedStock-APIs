@@ -113,6 +113,10 @@ const User = mongoose.Schema({
     type: String,
     default: ''
   },
+  legalDocument: {
+    type: String,
+    default: ''
+  },
   paymentMethod: [{
     securityCode: String,
     expiry: String

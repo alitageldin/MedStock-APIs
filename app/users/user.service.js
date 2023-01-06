@@ -929,3 +929,19 @@ worksheet.getRow(1).eachCell((cell) => {
         }
     }
 };
+
+exports.uploadLegalDocument = async (data, files) => {
+  try {
+    const legalDocument = files?.legalDocument && files.legalDocument.length ? files.legalDocument.map(item => { return `${item.path}`.replace('uploads','') }) : undefined;
+    const user = await User.findById(data.id)
+    if(legalDocument && legalDocument.length > 0){
+      await legalDocument.forEach(elem => {
+        user.legalDocument = elem;
+        user.save();
+      })
+    }
+    return user;
+  } catch (error) {
+    throw error
+  }
+}
