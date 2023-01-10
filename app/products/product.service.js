@@ -349,61 +349,56 @@ exports.exportProducts = async (queryParams, res) => {
     { header: "Description", key: "description", width: 100 }
   ];
 
-  const { sortBy } = queryParams
-    const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
-    const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 20000
-    const q = queryParams.q ? queryParams.q : ''
-    const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
-    const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
-    const query = [{ name: { $regex: q, $options: 'i' } }]
+  // const { sortBy } = queryParams
+  //   const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
+  //   const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 20000
+  //   const q = queryParams.q ? queryParams.q : ''
+  //   const order = queryParams.order && queryParams.order === 'desc' ? -1 : 1
+  //   const skip = pageNo === 1 ? 0 : ((pageNo - 1) * pageSize)
+  //   const query = [{ name: { $regex: q, $options: 'i' } }]
 
 
-    const pipline = [
-      {
-        $match: {
-          $or: query
-        }
-      },
-      { $skip: skip },
-      { $limit: pageSize },
-      { $sort: { [sortBy]: order } }
-    ]
-    const matchIndex = pipline.findIndex(aq => aq.$match)
-  let products = await Product.aggregate([
-    {
-      $facet: {
-        results: [
-          {
-            $lookup: {
-              from: 'categories',
-              localField: 'categoryId',
-              foreignField: '_id',
-              as: 'category'
-            }
-          },
-          {
-            $unwind: {
-              path: "$category",
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          ...pipline
-        ],
-        count: [
-          { $match: { ...pipline[matchIndex].$match } },
-          { $count: 'totalCount' }]
-      }
-    }
-])
+  //   const pipline = [
+  //     {
+  //       $match: {
+  //         $or: query
+  //       }
+  //     },
+  //     { $skip: skip },
+  //     { $limit: pageSize },
+  //     { $sort: { [sortBy]: order } }
+  //   ]
+  //   const matchIndex = pipline.findIndex(aq => aq.$match)
+//   let products = await Product.aggregate([
+//     {
+//       $facet: {
+//         results: [
+//           {
+//             $lookup: {
+//               from: 'categories',
+//               localField: 'categoryId',
+//               foreignField: '_id',
+//               as: 'category'
+//             }
+//           }
+//           ...pipline
+//         ],
+//         // count: [
+//         //   { $match: { ...pipline[matchIndex].$match } },
+//         //   { $count: 'totalCount' }]
+//       }
+//     }
+// ])
+let products = await Product.find().populate('categoryId');
 let counter = 1;
-products[0]['results'].forEach((product) => {
+products.forEach((product) => {
   var rowValues = [];
   rowValues[1] = product._id;
   rowValues[2] = product.name;
   rowValues[3] = product.sku;
   rowValues[4] = product.price;
-  rowValues[5] = product.category.title;
-  rowValues[6] = product.categoryId;
+  rowValues[5] = product.categoryId.title;
+  rowValues[6] = product.categoryId._id;
   rowValues[7] = product.imageUrl;
   rowValues[8] = product.description;
   const insertedRow = worksheet.insertRow(counter+1, rowValues);
@@ -419,7 +414,7 @@ worksheet.getRow(1).eachCell((cell) => {
     console.log(data);
     let response = {
       path: `files/products.xlsx`,
-      total: products[0]['count']
+      // total: products[0]['count']
     };
     return response;
 

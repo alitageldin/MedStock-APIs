@@ -197,7 +197,7 @@ router.get('/export-approved-buyer', async (req, res) => {
   }
 })
 router.post('/upload-legal-document',uploadLegalDoc.fields([
-  { name: 'legalDocument', maxCount: 10 }
+  { name: 'legalDocuments', maxCount: 2 }
 ]), async (req, res) => {
   try {
     console.log(req);

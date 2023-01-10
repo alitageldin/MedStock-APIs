@@ -2,6 +2,9 @@
 const { ErrorHandler } = require('../../helpers/ErrorHandler')
 const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
 const Rating = require('./rating.model')
+const SellerProduct = require('../seller-products/sellerProducts.model')
+const User = require('../users/user.model')
+
 const { validRatingSchema } = require('../../helpers/validation.schema')
 const { default: mongoose } = require('mongoose')
 
@@ -67,11 +70,24 @@ exports.create = async (data) => {
     if (error) {
       throw ErrorHandler(error.message, BAD_REQUEST)
     }
-    const refund = new Rating(data)
-    await refund.save()
-  
-   
-    return refund;
+    const rating = new Rating(data)
+    await rating.save();
+    let orderForRating = await OrderDetails.findById(refund.orderId).lean();
+    let sellerProduct = await SellerProduct.findById(orderForRating.sellerId).lean();
+    let seller = await User.findById(sellerProduct.userId).lean();
+    const templateHbs = 'seller-product-rating.hbs';
+    if(admin && admin.length > 0){
+      admin.forEach(elem =>{
+        if (seller.email) {
+          sendEmail(seller.email,
+            {
+              orderNum: orderForRating.orderNum,
+            },
+            `Order and Product Rating Received`, templateHbs)
+        }
+      })
+    }
+    return rating;
   } catch (error) {
     throw error
   }

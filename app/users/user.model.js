@@ -113,9 +113,25 @@ const User = mongoose.Schema({
     type: String,
     default: ''
   },
-  legalDocument: {
+  legalDocument1: {
     type: String,
     default: ''
+  },
+  legalDocument2: {
+    type: String,
+    default: ''
+  },
+  pharmacyLicense:{
+    type: String,
+    default: '' 
+  },
+  taxId:{
+    type: String,
+    default: '' 
+  },
+  legalDocumentVerify:{
+    type: Boolean,
+    default: false
   },
   paymentMethod: [{
     securityCode: String,

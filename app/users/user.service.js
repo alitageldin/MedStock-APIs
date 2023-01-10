@@ -935,10 +935,22 @@ exports.uploadLegalDocument = async (data, files) => {
     const legalDocument = files?.legalDocument && files.legalDocument.length ? files.legalDocument.map(item => { return `${item.path}`.replace('uploads','') }) : undefined;
     const user = await User.findById(data.id)
     if(legalDocument && legalDocument.length > 0){
+      let index = 0;
       await legalDocument.forEach(elem => {
-        user.legalDocument = elem;
-        user.save();
+        if(index === 0){
+          user.legalDocument1 = elem;
+        }else if(index === 1){
+          user.legalDocument2 = elem;
+        }
+        index++;
       })
+      if(data.pharmacyLicense){
+        user.pharmacyLicense = data.pharmacyLicense;
+      }
+      if(data.taxId){
+        user.taxId = data.taxId;
+      }
+      await user.save();
     }
     return user;
   } catch (error) {

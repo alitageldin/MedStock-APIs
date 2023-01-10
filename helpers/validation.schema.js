@@ -80,6 +80,8 @@ exports.validSellerProductSchema = (data) =>{
     isFeatured: Joi.boolean(),
     isDeleted: Joi.boolean,
     viewedCount: Joi.number(),
+    minOrderQuantity: Joi.number(),
+    maxOrderQuantity: Joi.number()
   }).validate(data)
 }
 exports.validUpdateSellerProductSchema = (data) =>{
@@ -147,7 +149,12 @@ exports.validUserSchemaPost = (user) => {
     selectedProfile: Joi.string(),
     city: Joi.string(),
     viewedCount: Joi.number(),
-    legalDocument: Joi.string()
+    legalDocument1: Joi.string(),
+    legalDocument2: Joi.string(),
+    pharmacyLicense: Joi.string(),
+    pharmacyLicense: Joi.string(),
+    taxId: Joi.string(),
+    legalDocumentVerify: Joi.boolean()
   }).validate(user)
 }
 exports.validUserSchemaPut = (user) => {

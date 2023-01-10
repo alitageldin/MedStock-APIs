@@ -2,6 +2,10 @@
 const { ErrorHandler } = require('../../helpers/ErrorHandler')
 const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
 const Refund = require('./refund.model')
+const OrderDetails = require('../orders/orderDetail.model')
+const SellerProduct = require('../seller-products/sellerProducts.model')
+const Admin = require('../admin/admin.model')
+const { sendEmail } = require('../emails/mailer')
 const { validRefundsSchema } = require('../../helpers/validation.schema')
 const { default: mongoose } = require('mongoose')
 
@@ -69,6 +73,28 @@ exports.create = async (data) => {
     }
     const refund = new Refund(data)
     await refund.save()
+
+    if(refund){
+      let orderForRefund = await OrderDetails.findById(refund.orderId).lean();
+      let admin = await Admin.find();
+      // let sellerProduct =  await SellerProduct.findById(refund.sellerProductId).populate('products').populate('users');
+      const templateHbs = 'order-refund.hbs';
+      if(admin && admin.length > 0){
+        admin.forEach(elem =>{
+          if (elem.email) {
+            sendEmail(elem.email,
+              {
+                email: elem.email,
+                orderNum: orderForRefund.orderNum,
+                reason: refund.reason,
+              },
+              `Refund/Return Request Received`, templateHbs)
+          }
+        })
+       
+      }
+     
+    }
   
    
     return refund;

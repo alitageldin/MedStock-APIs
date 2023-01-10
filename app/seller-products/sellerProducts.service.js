@@ -920,6 +920,8 @@ exports.update = async (id, data) => {
     // product.productId = data.productId 
     // product.categoryId = data.categoryId
     product.notes = data.notes
+    product.minOrderQuantity = data.minOrderQuantity
+    product.maxOrderQuantity = data.maxOrderQuantity
     if(data.isFeatured){
       product.isFeatured = data.isFeatured;
     }else{

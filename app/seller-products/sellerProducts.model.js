@@ -14,6 +14,14 @@ const SellerProducts = mongoose.Schema({
   remainingQuantity: {
     type: Number
   },
+  minOrderQuantity:{
+    type: Number,
+    default: 0
+  },
+  maxOrderQuantity:{
+    type: Number,
+    default: 0
+  },
   discount: {
     type: Number
   },
@@ -45,7 +53,8 @@ const SellerProducts = mongoose.Schema({
   viewedCount:{
     type: Number,
     default: 0
-  }
+  },
+  
 }, {
   timestamps: true
 })
