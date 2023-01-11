@@ -26,7 +26,9 @@ const {
   exportPendingApprovalSeller,
   exportApprovedBuyer,
   exportPendingVerificationBuyer,
-  uploadLegalDocument
+  uploadLegalDocument,
+  uploadpharmacyLicenseDoc,
+  uploadtaxIdDoc
 } = require('./user.service')
 const router = express.Router()
 const multer = require('multer')
@@ -196,6 +198,28 @@ router.get('/export-approved-buyer', async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+router.post('/upload-pharmacy-license-doc',uploadLegalDoc.fields([
+  { name: 'pharmacyLicenseDoc', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const data = await uploadpharmacyLicenseDoc(req.body, req.files)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+router.post('/upload-taxId-doc',uploadLegalDoc.fields([
+  { name: 'taxIdDoc', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const data = await uploadtaxIdDoc(req.body, req.files)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
 router.post('/upload-legal-document',uploadLegalDoc.fields([
   { name: 'legalDocuments', maxCount: 2 }
 ]), async (req, res) => {

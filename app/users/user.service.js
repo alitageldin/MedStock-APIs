@@ -930,26 +930,31 @@ worksheet.getRow(1).eachCell((cell) => {
     }
 };
 
-exports.uploadLegalDocument = async (data, files) => {
+
+exports.uploadpharmacyLicenseDoc = async (data, files) => {
   try {
-    const legalDocument = files?.legalDocument && files.legalDocument.length ? files.legalDocument.map(item => { return `${item.path}`.replace('uploads','') }) : undefined;
+    const pharmacyLicenseDoc = files?.pharmacyLicenseDoc && files.pharmacyLicenseDoc.length ? files.pharmacyLicenseDoc.map(item => { return `${item.path}`.replace('uploads','') }) : undefined;
     const user = await User.findById(data.id)
-    if(legalDocument && legalDocument.length > 0){
-      let index = 0;
-      await legalDocument.forEach(elem => {
-        if(index === 0){
-          user.legalDocument1 = elem;
-        }else if(index === 1){
-          user.legalDocument2 = elem;
-        }
-        index++;
+    if(pharmacyLicenseDoc && pharmacyLicenseDoc.length > 0){
+      pharmacyLicenseDoc.forEach(elem => {
+          user.pharmacyLicenseDoc = elem;
       })
-      if(data.pharmacyLicense){
-        user.pharmacyLicense = data.pharmacyLicense;
-      }
-      if(data.taxId){
-        user.taxId = data.taxId;
-      }
+      await user.save();
+    }
+    return user;
+  } catch (error) {
+    throw error
+  }
+}
+
+exports.uploadtaxIdDoc = async (data, files) => {
+  try {
+    const taxIdDoc = files?.taxIdDoc && files.taxIdDoc.length ? files.taxIdDoc.map(item => { return `${item.path}`.replace('uploads','') }) : undefined;
+    const user = await User.findById(data.id)
+    if(taxIdDoc && taxIdDoc.length > 0){
+      taxIdDoc.forEach(elem => {
+          user.taxIdDoc = elem;
+      })
       await user.save();
     }
     return user;

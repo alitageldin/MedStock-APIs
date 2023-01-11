@@ -113,23 +113,15 @@ const User = mongoose.Schema({
     type: String,
     default: ''
   },
-  legalDocument1: {
+  pharmacyLicenseDoc: {
     type: String,
     default: ''
   },
-  legalDocument2: {
-    type: String,
-    default: ''
-  },
-  pharmacyLicense:{
+  taxIdDoc:{
     type: String,
     default: '' 
   },
-  taxId:{
-    type: String,
-    default: '' 
-  },
-  legalDocumentVerify:{
+  isDocVerified: {
     type: Boolean,
     default: false
   },

@@ -495,6 +495,20 @@ exports.sellerApproved = async(seller_id) =>{
   return seller;
 }
 
+exports.sellerDocApproved = async(seller_id) =>{
+  let seller = await userModel.findById(seller_id);
+  seller.isDocVerified = true;
+  seller.save();
+  return seller;
+}
+
+exports.sellerDocDisapproved = async(seller_id) =>{
+  let seller = await userModel.findById(seller_id);
+  seller.isDocVerified = false;
+  seller.save();
+  return seller;
+}
+
 exports.sellerDisapproved = async(seller_id) =>{
   let seller = await userModel.findById(seller_id);
   seller.isProfileVerified = false;

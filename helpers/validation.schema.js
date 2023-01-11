@@ -149,12 +149,9 @@ exports.validUserSchemaPost = (user) => {
     selectedProfile: Joi.string(),
     city: Joi.string(),
     viewedCount: Joi.number(),
-    legalDocument1: Joi.string(),
-    legalDocument2: Joi.string(),
-    pharmacyLicense: Joi.string(),
-    pharmacyLicense: Joi.string(),
-    taxId: Joi.string(),
-    legalDocumentVerify: Joi.boolean()
+    pharmacyLicenseDoc: Joi.string(),
+    taxIdDoc: Joi.string(),
+    isDocVerified: Joi.string()
   }).validate(user)
 }
 exports.validUserSchemaPut = (user) => {

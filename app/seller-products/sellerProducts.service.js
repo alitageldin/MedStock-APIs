@@ -1017,14 +1017,14 @@ exports.getFilteredSellerProducts = async (queryParams, body) => {
         }
       }
     }
-    // if(body.expiryDate){
-    //   pipline[matchIndex] = {
-    //     $match: {
-    //       ...pipline[matchIndex].$match,
-    //       expiryDate: { $lte: body.expiryDate} 
-    //     }
-    //   }
-    // }
+    if(body.expiryDate){
+      pipline[matchIndex] = {
+        $match: {
+          ...pipline[matchIndex].$match,
+          expiryDate: { $lte: new Date(body.expiryDate)} 
+        }
+      }
+    }
     if(body.categories && body.categories.length > 0){
       let categoryIds = [];
       for(let index=0; index < body.categories.length; index++){

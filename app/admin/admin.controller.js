@@ -97,8 +97,6 @@ router.post('/get-all-pending-approval-seller', async(req, res) => {
   }
 })
 
-
-
 router.post('/seller-approved', async(req, res) => {
   try {
     const sellers = await adminService.sellerApproved(req.body._id);
@@ -107,6 +105,24 @@ router.post('/seller-approved', async(req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+router.post('/seller-doc-approved', async(req, res) => {
+  try {
+    const sellers = await adminService.sellerDocApproved(req.body._id);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+router.post('/seller-doc-disapproved', async(req, res) => {
+  try {
+    const sellers = await adminService.sellerDocDisapproved(req.body._id);
+    return res.status(SUCCESS).send(sellers)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+
 
 router.post('/seller-disapproved', async(req, res) => {
   try {
