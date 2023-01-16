@@ -2,8 +2,11 @@
 const { ErrorHandler } = require('../../helpers/ErrorHandler')
 const { BAD_REQUEST, NOT_FOUND } = require('../../helpers/HTTP.CODES')
 const Rating = require('./rating.model')
+const OrderDetails = require('../orders/orderDetail.model')
 const SellerProduct = require('../seller-products/sellerProducts.model')
 const User = require('../users/user.model')
+const Admin = require('../admin/admin.model')
+const { sendEmail } = require('../emails/mailer')
 
 const { validRatingSchema } = require('../../helpers/validation.schema')
 const { default: mongoose } = require('mongoose')
@@ -114,16 +117,23 @@ exports.create = async (data) => {
     }
     const rating = new Rating(data)
     await rating.save();
-    let orderForRating = await OrderDetails.findById(refund.orderId).lean();
-    let sellerProduct = await SellerProduct.findById(orderForRating.sellerId).lean();
-    let seller = await User.findById(sellerProduct.userId).lean();
+    console.log(rating);
+    const orderDetails = await OrderDetails.findById(rating.orderId);
+    console.log(orderDetails);
+    if(!orderDetails.userReviewed){
+      orderDetails.userReviewed = true;
+    }
+    await orderDetails.save();
+    let sellerProduct = await SellerProduct.findById(orderDetails.sellerProductId);
+    let seller = await User.findById(sellerProduct.userId);
     const templateHbs = 'seller-product-rating.hbs';
+    let admin = await Admin.find();
     if(admin && admin.length > 0){
       admin.forEach(elem =>{
         if (seller.email) {
           sendEmail(seller.email,
             {
-              orderNum: orderForRating.orderNum,
+              orderNum: orderDetails.orderNum,
             },
             `Order and Product Rating Received`, templateHbs)
         }

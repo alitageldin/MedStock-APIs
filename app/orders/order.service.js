@@ -35,6 +35,7 @@ exports.create = async (data) => {
           orderDetails.notes = elem.notes;
           orderDetails.orderId = order._id;
           orderDetails.orderNum = "1000"+count;
+          orderDetails.userReviewed = false;
           sellerIdsList.push(elem.sellerId);
           orderDetails.save();
           

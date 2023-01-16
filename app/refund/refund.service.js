@@ -75,17 +75,19 @@ exports.create = async (data) => {
     await refund.save()
 
     if(refund){
-      let orderForRefund = await OrderDetails.findById(refund.orderId).lean();
+      let orderForRefund = await OrderDetails.findById(refund.orderId);
+      console.log(orderForRefund)
       let admin = await Admin.find();
       // let sellerProduct =  await SellerProduct.findById(refund.sellerProductId).populate('products').populate('users');
       const templateHbs = 'order-refund.hbs';
+      console.log(admin)
       if(admin && admin.length > 0){
       admin.forEach(async elem =>{
           if (elem.email) {
             await sendEmail(elem.email,
               {
-                email: 'awaisarif1993@gmail.com',
-                orderNum: orderForRefund.orderNum? orderForRefund.orderNum : '' ,
+                email: elem.email,
+                orderNum: orderForRefund.orderNum? orderForRefund.orderNum : "" ,
                 reason: refund.reason,
               },
               `Refund/Return Request Received`, templateHbs)

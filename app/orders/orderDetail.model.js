@@ -39,6 +39,10 @@ const OrderDetails = mongoose.Schema({
   },
   orderNum:{
     type: String
+  },
+  userReviewed: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
