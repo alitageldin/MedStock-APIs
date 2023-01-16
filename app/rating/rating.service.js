@@ -35,6 +35,48 @@ exports.getAll = async (queryParams) => {
       {
         $facet: {
           results: [
+            {
+              $lookup: {
+                from: 'sellerproducts',
+                localField: 'sellerProductId',
+                foreignField: '_id',
+                as: 'sellerproduct',
+              }
+            },
+            {
+              $unwind: {
+                path: "$sellerproduct",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $lookup: {
+                from: "products",
+                localField: "sellerproduct.productId",
+                foreignField: "_id",
+                as: "sellerproduct.product"
+              }
+            },
+            {
+              $unwind: {
+                path: "$sellerproduct.product",
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+              }
+            },
+            {
+              $unwind: {
+                path: "$user",
+                preserveNullAndEmptyArrays: true
+              }
+            },
             ...pipline
           ],
           count: [

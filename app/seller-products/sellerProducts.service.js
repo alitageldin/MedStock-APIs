@@ -39,12 +39,26 @@ exports.getAll = async (id) => {
             },
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
@@ -139,12 +153,26 @@ exports.getSellerProducts = async (queryParams) => {
             },
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
@@ -277,12 +305,26 @@ exports.searchSellerProducts = async (queryParams) => {
             },
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
@@ -379,12 +421,26 @@ exports.getSpecificSellerProduct = async (queryParams) => {
             },
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
@@ -542,14 +598,29 @@ exports.getSellerFeatureProduct = async (queryParams) => {
                 as: 'productImages'
               }
             },
+           
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
@@ -684,12 +755,26 @@ exports.getHighlyDiscountProduct = async (queryParams) => {
             },
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
@@ -812,12 +897,26 @@ exports.getSaleProduct = async (queryParams) => {
             },
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
@@ -1054,12 +1153,26 @@ exports.getFilteredSellerProducts = async (queryParams, body) => {
             },
             {
               $lookup: {
-                from: 'ratings',
-                localField: '_id',
-                foreignField: 'sellerProductId',
-                as: 'ratings'
-              }
-            },
+                  from: "ratings",
+                  let: { id: { $toObjectId: "$_id" } },
+                  pipeline: [{ $match: { $expr: { $eq: ["$sellerProductId", "$$id"] } } },
+                  {
+                      $lookup: {
+                          from: "users",
+                          let: { userId: { $toObjectId: "$userId" } },
+                          pipeline: [{ $match: { $expr: { $eq: ["$_id", "$$userId"] } } }],
+                          as: "buyer"
+                      },
+                  }, {
+                      $unwind: {
+                          path: "$buyer",
+                          preserveNullAndEmptyArrays: true
+                      }
+                  }
+                  ],
+                  as: "ratings"
+              },
+          },
             {
               $lookup: {
                 from: 'products',
