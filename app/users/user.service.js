@@ -674,19 +674,10 @@ worksheet.getRow(1).eachCell((cell) => {
 });
   try {
     const data = await workbook.xlsx.writeFile(`${path}/users.xlsx`);
-    console.log(data);
     let response = {
       path: `files/users.xlsx`,
     };
     return response;
-
-    // .then(() => {
-    //   console.log(`${path}/users.xlsx`);
-    //   let response = {
-    //       path: `${path}/users.xlsx`,
-    //     };
-    //   return response;
-    // });
   } catch (err) {
       return {
           message: err,
@@ -722,19 +713,10 @@ worksheet.getRow(1).eachCell((cell) => {
 });
   try {
     const data = await workbook.xlsx.writeFile(`${path}/approvedSeller.xlsx`);
-    console.log(data);
     let response = {
       path: `files/approvedSeller.xlsx`,
     };
     return response;
-
-    // .then(() => {
-    //   console.log(`${path}/users.xlsx`);
-    //   let response = {
-    //       path: `${path}/users.xlsx`,
-    //     };
-    //   return response;
-    // });
   } catch (err) {
       return {
           message: err,
@@ -769,19 +751,10 @@ worksheet.getRow(1).eachCell((cell) => {
 });
   try {
     const data = await workbook.xlsx.writeFile(`${path}/rejectedSeller.xlsx`);
-    console.log(data);
     let response = {
       path: `files/rejectedSeller.xlsx`,
     };
     return response;
-
-    // .then(() => {
-    //   console.log(`${path}/users.xlsx`);
-    //   let response = {
-    //       path: `${path}/users.xlsx`,
-    //     };
-    //   return response;
-    // });
   } catch (err) {
       return {
           message: err,
@@ -817,19 +790,10 @@ worksheet.getRow(1).eachCell((cell) => {
 });
   try {
     const data = await workbook.xlsx.writeFile(`${path}/pendingApprovalSeller.xlsx`);
-    console.log(data);
     let response = {
       path: `files/pendingApprovalSeller.xlsx`,
     };
     return response;
-
-    // .then(() => {
-    //   console.log(`${path}/users.xlsx`);
-    //   let response = {
-    //       path: `${path}/users.xlsx`,
-    //     };
-    //   return response;
-    // });
   } catch (err) {
       return {
           message: err,
@@ -865,19 +829,10 @@ worksheet.getRow(1).eachCell((cell) => {
 });
   try {
     const data = await workbook.xlsx.writeFile(`${path}/approvedBuyer.xlsx`);
-    console.log(data);
     let response = {
       path: `files/approvedBuyer.xlsx`,
     };
     return response;
-
-    // .then(() => {
-    //   console.log(`${path}/users.xlsx`);
-    //   let response = {
-    //       path: `${path}/users.xlsx`,
-    //     };
-    //   return response;
-    // });
   } catch (err) {
       return {
           message: err,
@@ -910,19 +865,10 @@ worksheet.getRow(1).eachCell((cell) => {
 });
   try {
     const data = await workbook.xlsx.writeFile(`${path}/pendingVerifyBuyer.xlsx`);
-    console.log(data);
     let response = {
       path: `files/pendingVerifyBuyer.xlsx`,
     };
     return response;
-
-    // .then(() => {
-    //   console.log(`${path}/users.xlsx`);
-    //   let response = {
-    //       path: `${path}/users.xlsx`,
-    //     };
-    //   return response;
-    // });
   } catch (err) {
       return {
           message: err,

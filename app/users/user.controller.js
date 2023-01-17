@@ -224,7 +224,6 @@ router.post('/upload-legal-document',uploadLegalDoc.fields([
   { name: 'legalDocuments', maxCount: 2 }
 ]), async (req, res) => {
   try {
-    console.log(req);
     const data = await uploadLegalDocument(req.body, req.files)
     return res.status(SUCCESS).send(data)
   } catch (error) {

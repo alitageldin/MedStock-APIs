@@ -14,7 +14,6 @@ async function seedData () {
         await cateogry();
         await seedSeller();
       } catch (error) {
-        console.log(error)
       }
     }
   })

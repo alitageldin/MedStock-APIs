@@ -117,9 +117,7 @@ exports.create = async (data) => {
     }
     const rating = new Rating(data)
     await rating.save();
-    console.log(rating);
     const orderDetails = await OrderDetails.findById(rating.orderId);
-    console.log(orderDetails);
     if(!orderDetails.userReviewed){
       orderDetails.userReviewed = true;
     }

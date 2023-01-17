@@ -44,7 +44,6 @@ exports.create = async (data) => {
 
         data.orderList.forEach(async elem => {
           const sellerProduct = await SellerProductsModel.findById(elem.sellerProductId);
-          console.log(sellerProduct);
           if(sellerProduct){
             if(!sellerProduct.remainingQuantity){
               sellerProduct.remainingQuantity = sellerProduct.quantity - elem.quantity;
@@ -56,7 +55,6 @@ exports.create = async (data) => {
         
         })
         const sellers = await User.find({'_id':{$in: sellerIdsList}}).lean();
-        console.log(sellers);
         if(sellers && sellers.length > 0){
           sellers.forEach(elem => {
           const templateHbs = 'order-receive.hbs'
@@ -818,19 +816,10 @@ exports.create = async (data) => {
   });
     try {
       const data = await workbook.xlsx.writeFile(`${path}/orders.xlsx`);
-      console.log(data);
       let response = {
         path: `files/orders.xlsx`,
       };
       return response;
-  
-      // .then(() => {
-      //   console.log(`${path}/users.xlsx`);
-      //   let response = {
-      //       path: `${path}/users.xlsx`,
-      //     };
-      //   return response;
-      // });
     } catch (err) {
         return {
             message: err,

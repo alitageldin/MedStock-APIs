@@ -125,7 +125,6 @@ exports.searchProduct1 = async (body) => {
 
 exports.searchProduct = async (body, queryParams) => {
   try {
-    console.log(body);
     const sortBy = body.sortBy;
     const pageNo = queryParams.pageNo ? Number(queryParams.pageNo) : 1
     const pageSize = queryParams.pageSize ? Number(queryParams.pageSize) : 10
@@ -411,20 +410,12 @@ worksheet.getRow(1).eachCell((cell) => {
 });
   try {
     const data = await workbook.xlsx.writeFile(`${path}/products.xlsx`);
-    console.log(data);
     let response = {
       path: `files/products.xlsx`,
       // total: products[0]['count']
     };
     return response;
 
-    // .then(() => {
-    //   console.log(`${path}/users.xlsx`);
-    //   let response = {
-    //       path: `${path}/users.xlsx`,
-    //     };
-    //   return response;
-    // });
   } catch (err) {
       return {
           message: err,

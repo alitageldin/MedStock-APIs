@@ -264,7 +264,6 @@ exports.searchSellerProducts = async (queryParams) => {
     }
     if(queryParams.productName){
       let productIds = await AdminProduct.distinct("_id", { name: { $regex: queryParams.productName, $options: 'i' } })
-      console.log(productIds);
       if(productIds && productIds.length > 0){
         pipline[matchIndex] = {
           // $match: {
@@ -278,7 +277,6 @@ exports.searchSellerProducts = async (queryParams) => {
           }
         }
 
-        console.log(pipline)
       }
     }
 
@@ -290,7 +288,6 @@ exports.searchSellerProducts = async (queryParams) => {
         }
       }
     }
-    console.log(pipline)
     let products = await Product.aggregate([
       {
         $facet: {
@@ -487,10 +484,8 @@ exports.getSpecificSellerProduct = async (queryParams) => {
 
 exports.updateSellerProductViewdCount = async (id) => {
   try {
-    console.log(id);
     if (id) {
       let sellerProduct = await Product.findById(id);
-      console.log(sellerProduct);
       if(sellerProduct){
         if(!sellerProduct.viewedCount){
           sellerProduct.viewedCount = 1;
@@ -559,21 +554,13 @@ exports.getSellerFeatureProduct = async (queryParams) => {
     }
     if(queryParams.productName){
       let productIds = await AdminProduct.distinct("_id", { name: { $regex: queryParams.productName, $options: 'i' } })
-      console.log(productIds);
       if(productIds && productIds.length > 0){
         pipline[matchIndex] = {
-          // $match: {
-          //   ...pipline[matchIndex].$match,
-          //   _id: mongoose.Types.ObjectId(queryParams.sellerProductId) 
-          // }
-
           $match: { 
             ...pipline[matchIndex].$match, 
             productId: { $in: productIds}
           }
         }
-
-        console.log(pipline)
       }
     }
 
@@ -585,7 +572,6 @@ exports.getSellerFeatureProduct = async (queryParams) => {
         }
       }
     }
-    console.log(pipline)
     let products = await Product.aggregate([
       {
         $facet: {
@@ -714,7 +700,6 @@ exports.getHighlyDiscountProduct = async (queryParams) => {
     }
     if(queryParams.productName){
       let productIds = await AdminProduct.distinct("_id", { name: { $regex: queryParams.productName, $options: 'i' } })
-      console.log(productIds);
       if(productIds && productIds.length > 0){
         pipline[matchIndex] = {
           // $match: {
@@ -728,7 +713,6 @@ exports.getHighlyDiscountProduct = async (queryParams) => {
           }
         }
 
-        console.log(pipline)
       }
     }
 
@@ -740,7 +724,6 @@ exports.getHighlyDiscountProduct = async (queryParams) => {
         }
       }
     }
-    console.log(pipline)
     let products = await Product.aggregate([
       {
         $facet: {
@@ -856,7 +839,6 @@ exports.getSaleProduct = async (queryParams) => {
     }
     if(queryParams.productName){
       let productIds = await AdminProduct.distinct("_id", { name: { $regex: queryParams.productName, $options: 'i' } })
-      console.log(productIds);
       if(productIds && productIds.length > 0){
         pipline[matchIndex] = {
           // $match: {
@@ -869,8 +851,6 @@ exports.getSaleProduct = async (queryParams) => {
             productId: { $in: productIds}
           }
         }
-
-        console.log(pipline)
       }
     }
 
@@ -882,7 +862,6 @@ exports.getSaleProduct = async (queryParams) => {
         }
       }
     }
-    console.log(pipline)
     let products = await Product.aggregate([
       {
         $facet: {
@@ -1000,11 +979,7 @@ exports.create = async (data, files) => {
 }
 exports.update = async (id, data) => {
   try {
-    // const { error } = validUpdateSellerProductSchema(data)
-    // if (error) {
-    //   throw ErrorHandler(error.message, BAD_REQUEST)
-    // }
-    console.log(data);
+   
     const product = await Product.findById(id)
     if (!product) {
       throw ErrorHandler('No product found', NOT_FOUND)
@@ -1136,8 +1111,6 @@ exports.getFilteredSellerProducts = async (queryParams, body) => {
         }
       }
     }
-    console.log(pipline);
-    console.log(body);
 
     let products = await Product.aggregate([
       {
