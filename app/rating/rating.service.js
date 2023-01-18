@@ -118,9 +118,7 @@ exports.create = async (data) => {
     const rating = new Rating(data)
     await rating.save();
     const orderDetails = await OrderDetails.findById(rating.orderId);
-    if(!orderDetails.userReviewed){
-      orderDetails.userReviewed = true;
-    }
+    orderDetails.userReviewed = true;
     await orderDetails.save();
     let sellerProduct = await SellerProduct.findById(orderDetails.sellerProductId);
     let seller = await User.findById(sellerProduct.userId);
