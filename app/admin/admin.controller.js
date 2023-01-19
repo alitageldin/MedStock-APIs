@@ -28,6 +28,82 @@ router.get('/', adminService.isAdmin, async (req, res) => {
     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
   }
 })
+
+
+/**Anayltics  start*/
+router.get('/get-analytics', adminService.isAdmin, async (req, res) => {
+  try {
+    const data = await adminService.getAnalytics(req.query)
+    return res.status(SUCCESS).send(data)
+  } catch (error) {
+    return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+  }
+})
+//Total Buyer Registered
+// router.get('/get-total-buyer-registered', adminService.isAdmin, async (req, res) => {
+//   try {
+//     const data = await adminService.getTotalBuyerRegistered(req.query)
+//     return res.status(SUCCESS).send({ ...data })
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+// //Total Seller Registered
+// router.get('/get-total-seller-registered', adminService.isAdmin, async (req, res) => {
+//   try {
+//     const data = await adminService.getTotalSellerRegistered(req.query)
+//     return res.status(SUCCESS).send({ ...data })
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+// //Total Approved Seller
+// router.get('/get-total-approved-seller-registered', adminService.isAdmin, async (req, res) => {
+//   try {
+//     const data = await adminService.getTotalApprovedSellerRegistered(req.query)
+//     return res.status(SUCCESS).send({ ...data })
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+// //Total Seller Products
+// router.get('/get-total-seller-products', adminService.isAdmin, async (req, res) => {
+//   try {
+//     const data = await adminService.getTotalSellerProducts(req.query)
+//     return res.status(SUCCESS).send({ ...data })
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+// //Total Featured Products
+// router.get('/get-total-featured-products', adminService.isAdmin, async (req, res) => {
+//   try {
+//     const data = await adminService.getTotalFeaturedProducts(req.query)
+//     return res.status(SUCCESS).send({ ...data })
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+// //Total Orders
+// router.get('/get-total-orders', adminService.isAdmin, async (req, res) => {
+//   try {
+//     const data = await adminService.getTotalOrders(req.query)
+//     return res.status(SUCCESS).send({ ...data })
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+// //Order Month Wise
+// router.get('/get-total-orders-monthly', adminService.isAdmin, async (req, res) => {
+//   try {
+//     const data = await adminService.getTotalOrdersMonthly(req.query)
+//     return res.status(SUCCESS).send({ ...data })
+//   } catch (error) {
+//     return res.status(error.status ? error.status : INTERNAL_ERR).send({ message: error.message })
+//   }
+// })
+/**Anayltics  end*/
+
 router.get('/:id', adminService.isAdmin, async (req, res) => {
   try {
     const data = await adminService.getById(req.params.id)

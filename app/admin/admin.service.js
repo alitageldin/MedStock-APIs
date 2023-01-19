@@ -9,6 +9,8 @@ const { sendEmail } = require('../emails/mailer')
 const { SA_ROLE_TITLE } = require('../../helpers/constants')
 const Role = require('../roles/role.model')
 const userModel = require('../users/user.model')
+const SellerProduct = require('../seller-products/sellerProducts.model')
+const OrderDetails = require('../orders/orderDetail.model')
 
 exports.login = async (email, password) => {
   try {
@@ -534,3 +536,45 @@ exports.buyerDisapproved = async(seller_id) =>{
   seller.save();
   return seller;
 }
+
+exports.getAnalytics = async (queryParams) => {
+  var analyticsArray = {};
+  analyticsArray['buyer-registered'] = await userModel.find({'isBuyer': true}).count();
+  analyticsArray['verified-buyer'] = await userModel.find({'isBuyer': true, 'isEmailVerified': true}).count();
+  analyticsArray['not-verified-buyer'] = await userModel.find({'isBuyer': true, 'isEmailVerified': false}).count();
+
+  analyticsArray['seller-registered'] = await userModel.find({'isSeller': true}).count();
+  analyticsArray['approved-seller'] = await userModel.find({'isSeller': true, 'isProfileVerified': true}).count();
+  analyticsArray['disapproved-seller'] = await userModel.find({'isSeller': true, 'isProfileVerified': false, 'ispendingApproval': false}).count();
+  analyticsArray['pendingapproval-seller'] = await userModel.find({'isSeller': true, 'ispendingApproval': true}).count();
+
+  analyticsArray['seller-products'] = await SellerProduct.find().count();
+  analyticsArray['featured-products'] = await SellerProduct.find({'isFeatured': true}).count();
+  
+  analyticsArray['total-orders'] = await OrderDetails.find().count();
+  analyticsArray['total-users'] = await userModel.find().count();
+  return analyticsArray;
+
+}
+
+// exports.getTotalBuyerRegistered = async (queryParams) => {
+  
+// }
+
+// exports.getTotalSellerRegistered = async (queryParams) => {
+// }
+
+// exports.getTotalApprovedSellerRegistered = async (queryParams) => {
+// }
+
+// exports.getTotalSellerProducts = async (queryParams) => {
+// }
+
+// exports.getTotalFeaturedProducts = async (queryParams) => {
+// }
+
+// exports.getTotalOrders = async (queryParams) => {
+// }
+
+// exports.getTotalOrdersMonthly = async (queryParams) => {
+// }
